@@ -1,0 +1,876 @@
+/* ==========================================================================
+   World Lottery Number Generator - Stylesheet
+   Modern, responsive, accessible, authentic lottery ball themes (2026)
+   ========================================================================== */
+
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-focus: rgba(37, 99, 235, 0.35);
+  
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  --surface-bg: #ffffff;
+  --surface-card: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-hover: #f1f5f9;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+  
+  --border-light: #e2e8f0;
+  --border-strong: #cbd5e1;
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+  --ball-size: 44px;
+  --ball-font-size: 1.05rem;
+}
+
+/* CSS Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans KR", "Noto Sans JP", sans-serif;
+  color: var(--text-main);
+  background: #f1f5f9;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Layout */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  padding: 24px 16px 40px;
+}
+
+.generator-container {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header (Requirement 3: English title & description) */
+.app-header {
+  background: var(--bg-gradient);
+  color: var(--text-inverse);
+  padding: 32px 20px;
+  box-shadow: var(--shadow-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-content {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  flex-shrink: 0;
+}
+
+.app-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.app-intro {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  margin-top: 4px;
+}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  backdrop-filter: blur(8px);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Card Container */
+.card {
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+
+/* Config Grid */
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+/* Static English Labels (Requirement 3) */
+.static-english-label {
+  color: #1e293b;
+}
+
+.select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select-wrapper::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #64748b;
+  border-bottom: 2px solid #64748b;
+  transform: rotate(45deg);
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.form-select {
+  width: 100%;
+  padding: 11px 36px 11px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-main);
+  background-color: var(--surface-muted);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-select:hover {
+  background-color: #ffffff;
+  border-color: var(--border-strong);
+}
+
+.form-select:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-focus);
+}
+
+/* Action Bar */
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  user-select: none;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #334155;
+  border: 1.5px solid var(--border-strong);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: var(--border-light);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #64748b;
+  border: 1.5px solid transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--surface-hover);
+  color: #0f172a;
+}
+
+/* Rule Card */
+.rule-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--primary);
+  padding: 18px 20px;
+}
+
+.rule-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e40af;
+  margin-bottom: 6px;
+}
+
+.info-svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.rule-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.rule-text {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+/* Results Card */
+.results-card {
+  min-height: 240px;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.results-heading {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #64748b;
+  font-size: 0.95rem;
+  background-color: var(--surface-muted);
+  border-radius: var(--radius-md);
+  border: 2px dashed #cbd5e1;
+}
+
+/* Results Container & Line Rows */
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.result-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  animation: slideInRow 0.35s ease backwards;
+}
+
+.result-row:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-md);
+}
+
+@keyframes slideInRow {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.result-line-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #475569;
+  background-color: #f1f5f9;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.btn-copy-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  background-color: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-line:hover {
+  background-color: var(--surface-hover);
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.btn-copy-line.copied {
+  background-color: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.btn-copy-line .icon-svg {
+  flex-shrink: 0;
+}
+
+/* Balls Container */
+.balls-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.balls-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.bonus-balls {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  background-color: rgba(241, 245, 249, 0.7);
+  border: 1px dashed #cbd5e1;
+}
+
+.bonus-divider {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #94a3b8;
+  margin: 0 4px;
+  user-select: none;
+}
+
+.bonus-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+
+/* ==========================================================================
+   Lottery Ball 3D Styling & Theme Color Definitions
+   ========================================================================== */
+
+.lotto-ball {
+  width: var(--ball-size);
+  height: var(--ball-size);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ball-font-size);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.22),
+              inset 0 -3px 5px rgba(0, 0, 0, 0.3),
+              inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lotto-ball:hover {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.ball-animate {
+  animation: ballPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes ballPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-15deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* Korea Lotto 6/45: Official 5-color range bands */
+.ball-kr-1 {
+  background: radial-gradient(circle at 35% 30%, #fef08a 0%, #facc15 45%, #ca8a04 100%);
+  color: #451a03;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.ball-kr-11 {
+  background: radial-gradient(circle at 35% 30%, #93c5fd 0%, #3b82f6 50%, #1d4ed8 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-kr-21 {
+  background: radial-gradient(circle at 35% 30%, #fca5a5 0%, #ef4444 50%, #b91c1c 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-kr-31 {
+  background: radial-gradient(circle at 35% 30%, #cbd5e1 0%, #64748b 50%, #334155 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-kr-41 {
+  background: radial-gradient(circle at 35% 30%, #86efac 0%, #22c55e 50%, #15803d 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* US Powerball / Mega Millions / EuroJackpot: Pearlescent White Balls */
+.ball-standard-white {
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* US Powerball: Red Powerball */
+.ball-powerball {
+  background: radial-gradient(circle at 35% 30%, #f87171 0%, #dc2626 50%, #991b1b 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4), inset 0 -3px 5px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+/* US Mega Millions: Gold Mega Ball */
+.ball-megaball {
+  background: radial-gradient(circle at 35% 30%, #fde68a 0%, #f59e0b 50%, #b45309 100%);
+  color: #451a03;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4), inset 0 -3px 5px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+/* EuroMillions: Royal Blue main ball & Gold Star */
+.ball-eu-blue {
+  background: radial-gradient(circle at 35% 30%, #60a5fa 0%, #1d4ed8 50%, #1e3a8a 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-star {
+  background: radial-gradient(circle at 35% 30%, #fef08a 0%, #eab308 50%, #a16207 100%);
+  color: #451a03;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 2px solid #fde047;
+  box-shadow: 0 4px 10px rgba(234, 179, 8, 0.4), inset 0 -3px 5px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+}
+
+/* EuroJackpot: Euro Numbers Gold */
+.ball-euro-gold {
+  background: radial-gradient(circle at 35% 30%, #fed7aa 0%, #f97316 50%, #c2410c 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* UK Lotto */
+.ball-uk-lotto {
+  background: radial-gradient(circle at 35% 30%, #93c5fd 0%, #2563eb 50%, #1e40af 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Japan LOTO 6 & LOTO 7 */
+.ball-jp-main {
+  background: radial-gradient(circle at 35% 30%, #fdba74 0%, #ea580c 50%, #9a3412 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-jp-bonus {
+  background: radial-gradient(circle at 35% 30%, #f472b6 0%, #db2777 50%, #9d174d 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Canada Lotto 6/49 */
+.ball-ca-main {
+  background: radial-gradient(circle at 35% 30%, #93c5fd 0%, #2563eb 50%, #1d4ed8 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-ca-bonus {
+  background: radial-gradient(circle at 35% 30%, #fde047 0%, #ca8a04 50%, #854d0e 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Australia Oz Lotto */
+.ball-oz-main {
+  background: radial-gradient(circle at 35% 30%, #fef08a 0%, #eab308 50%, #a16207 100%);
+  color: #451a03;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.ball-oz-supp {
+  background: radial-gradient(circle at 35% 30%, #5eead4 0%, #0d9488 50%, #115e59 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Australia Powerball */
+.ball-au-main {
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+.ball-au-power {
+  background: radial-gradient(circle at 35% 30%, #f87171 0%, #dc2626 50%, #7f1d1d 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Brazil Mega-Sena: Signature Emerald Green */
+.ball-megasena {
+  background: radial-gradient(circle at 35% 30%, #6ee7b7 0%, #059669 50%, #064e3b 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3), inset 0 -3px 5px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+/* Singapore TOTO */
+.ball-sg-main {
+  background: radial-gradient(circle at 35% 30%, #7dd3fc 0%, #0284c7 50%, #075985 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-sg-bonus {
+  background: radial-gradient(circle at 35% 30%, #fca5a5 0%, #e11d48 50%, #9f1239 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* South Africa PowerBall */
+.ball-za-main {
+  background: radial-gradient(circle at 35% 30%, #5eead4 0%, #0d9488 50%, #134e4a 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.ball-za-power {
+  background: radial-gradient(circle at 35% 30%, #f87171 0%, #ef4444 50%, #991b1b 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Fallback generic balls */
+.ball-standard {
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e2e8f0 70%, #94a3b8 100%);
+  color: #0f172a;
+}
+
+.ball-bonus {
+  background: radial-gradient(circle at 35% 30%, #fca5a5 0%, #ef4444 60%, #b91c1c 100%);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Toast Notification
+   ========================================================================== */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px);
+  background-color: rgba(15, 23, 42, 0.94);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-xl);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: 90vw;
+  text-align: center;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.app-footer {
+  background: #ffffff;
+  border-top: 1px solid var(--border-light);
+  padding: 24px 20px;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-note {
+  font-size: 0.88rem;
+  color: #475569;
+}
+
+.footer-disclaimer {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.footer-disclaimer kbd {
+  font-family: monospace;
+  background: #f1f5f9;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.85em;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  :root {
+    --ball-size: 38px;
+    --ball-font-size: 0.92rem;
+  }
+
+  .app-main {
+    padding: 16px 12px 32px;
+  }
+
+  .card {
+    padding: 18px 14px;
+  }
+
+  .app-title {
+    font-size: 1.35rem;
+  }
+
+  .app-intro {
+    font-size: 0.85rem;
+  }
+
+  .action-bar {
+    flex-direction: column;
+  }
+
+  .action-bar .btn {
+    width: 100%;
+  }
+
+  .balls-wrapper {
+    gap: 6px;
+  }
+
+  .balls-group {
+    gap: 6px;
+  }
+
+  .bonus-balls {
+    padding: 2px 4px;
+    gap: 6px;
+  }
+
+  .bonus-badge {
+    font-size: 0.65rem;
+  }
+}

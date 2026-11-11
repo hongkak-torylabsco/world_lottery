@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Lottery Number Generator</title>
+  <meta name="description" content="Generate statistically uniform, cryptographically secure lottery numbers for major global lotteries including Korea Lotto 6/45, Powerball, Mega Millions, EuroMillions, and more.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Header: Kept in English (Requirement 3) -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="header-brand">
+          <div class="logo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+              <path d="M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24M4.93 19.07l4.24-4.24" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="app-title">World Lottery Number Generator</h1>
+            <p class="app-intro">Official draw mechanics &amp; cryptographic number generation for the world's most popular lotteries.</p>
+          </div>
+        </div>
+        <div class="badge-status" title="Rules and matrices updated for 2026">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span>Verified 2026 Mechanics</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="generator-container">
+        <!-- Configuration Card -->
+        <section class="card config-card" aria-labelledby="config-title">
+          <h2 id="config-title" class="sr-only">Lottery Configuration</h2>
+          <form class="config-grid" onsubmit="event.preventDefault();">
+            <!-- Country: English label (Requirement 3) -->
+            <div class="form-group">
+              <label for="country-select" class="form-label static-english-label">Country</label>
+              <div class="select-wrapper">
+                <select id="country-select" name="country" class="form-select" aria-label="Country">
+                  <!-- Populated dynamically without flag icons or 2-letter prefixes (Requirement 4) -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Lottery Name: English label (Requirement 3) -->
+            <div class="form-group">
+              <label for="game-select" class="form-label static-english-label">Lottery Name</label>
+              <div class="select-wrapper">
+                <select id="game-select" name="game" class="form-select" aria-label="Lottery Name">
+                  <!-- Populated dynamically based on selected country -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Quantity: Localized label (Requirement 5) -->
+            <div class="form-group">
+              <label id="quantity-label" for="quantity-select" class="form-label">생성 수량</label>
+              <div class="select-wrapper">
+                <select id="quantity-select" name="quantity" class="form-select" aria-label="Quantity">
+                  <option value="1">1게임</option>
+                  <option value="3">3게임</option>
+                  <option value="5" selected>5게임</option>
+                  <option value="10">10게임</option>
+                </select>
+              </div>
+            </div>
+          </form>
+
+          <!-- Action buttons -->
+          <div class="action-bar">
+            <button id="btn-generate" type="button" class="btn btn-primary">
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>번호 생성하기</span>
+            </button>
+            <button id="btn-copy-all" type="button" class="btn btn-secondary" disabled>
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
+              <span>전체 번호 복사</span>
+            </button>
+            <button id="btn-clear" type="button" class="btn btn-ghost">
+              <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span>초기화</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Official Draw Rules / Info Card -->
+        <section id="rule-container" class="card rule-card" aria-live="polite">
+          <div class="rule-icon-title">
+            <svg class="info-svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            <h2 id="rule-heading" class="rule-heading">공식 추첨 규칙</h2>
+          </div>
+          <p id="rule-text" class="rule-text"></p>
+        </section>
+
+        <!-- Results Section -->
+        <section class="card results-card" aria-labelledby="results-heading">
+          <div class="results-header">
+            <h2 id="results-heading" class="results-heading">생성된 번호</h2>
+          </div>
+
+          <div id="empty-state" class="empty-state">
+            상단에서 복권 종류와 수량을 선택한 후 "번호 생성하기" 버튼을 눌러주세요.
+          </div>
+
+          <div id="results-container" class="results-container" role="region" aria-label="Generated Lottery Lines">
+            <!-- Rendered dynamically by script.js -->
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p class="footer-note">
+          <strong>World Lottery Number Generator</strong> &bull; Rules and matrix definitions updated as of November 11, 2026.
+        </p>
+        <p class="footer-disclaimer">
+          Random numbers are generated on your device using cryptographically secure uniform pseudo-random number generators (<kbd>crypto.getRandomValues</kbd>) with modulo-bias elimination. This tool is for personal entertainment and statistical simulation only. Play responsibly.
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Accessibility Live Region for Screen Readers -->
+  <div id="live-region" class="sr-only" aria-live="polite" role="status"></div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
