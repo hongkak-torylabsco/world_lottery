@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이용 안내 | World Lottery</title>
+  <meta name="description" content="본번호와 보너스의 차이, 브라우저 난수 생성과 복사 방법, 책임 있는 복권 이용 원칙을 설명합니다.">
+  <link rel="canonical" href="https://world-lottery.pages.dev/guide">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="information-page">
+    <nav class="information-nav" aria-label="사이트 안내">
+      <a href="index.html">번호 생성기</a>
+      <a href="about.html">사이트 소개</a>
+      <a href="guide.html" aria-current="page">이용 안내</a>
+      <a href="privacy.html">개인정보처리방침</a>
+      <a href="contact.html">문의 안내</a>
+    </nav>
+    <article class="card information-content">
+      <h1>이용 안내</h1>
+      <nav class="information-nav" aria-label="다른 언어 요약">
+        <a href="#en" lang="en">English</a>
+        <a href="#ja" lang="ja">日本語</a>
+        <a href="#pt-BR" lang="pt-BR">Português (Brasil)</a>
+      </nav>
+      <h2>번호 생성과 복사</h2>
+      <p>국가, 복권, 생성 수량을 고른 뒤 번호를 생성하세요. 생성 결과에서 한 조합 또는 전체를 복사할 수 있습니다. 초기화하면 화면의 조합이 지워집니다. 이미 복사한 내용은 기기의 클립보드에 남을 수 있습니다.</p>
+      <h2>구매 선택 번호와 추첨 예시</h2>
+      <p>예를 들어 미국 Powerball의 빨간 공은 본번호와 함께 선택하는 별도 번호입니다. 한국 로또 6/45의 보너스는 추첨에서만 결정됩니다. 사이트는 이런 번호에 ‘추첨 예시’를 붙입니다. 복권마다 적용되는 규칙과 공식 출처는 생성기의 규칙 카드에서 확인할 수 있습니다.</p>
+      <h2>브라우저에서 번호를 만드는 방식</h2>
+      <p>지원되는 브라우저에서는 <code>crypto.getRandomValues</code>를 사용합니다. 번호 범위의 크기로 나눌 때 특정 값이 더 자주 나오지 않도록 일부 난수는 버리고 다시 뽑습니다. 각 번호 풀에서 이미 뽑은 값은 다음 선택에서 제외합니다. Web Crypto를 쓸 수 없는 환경에서는 <code>Math.random</code>을 사용합니다.</p>
+      <h2>자주 묻는 질문</h2>
+      <dl>
+        <dt>생성한 번호가 당첨 가능성을 높이나요?</dt>
+        <dd>공정한 추첨에서는 같은 게임의 모든 유효한 조합이 같은 1등 당첨 확률을 가집니다. 과거 당첨 빈도로 다음 추첨을 예측할 수 없습니다.</dd>
+        <dt>서로 다른 게임 줄에 같은 번호가 나올 수 있나요?</dt>
+        <dd>각 조합은 독립적으로 생성하므로 줄 사이에서 번호나 조합이 반복될 수 있습니다. 별도 번호 풀이 있는 게임은 본번호와 별도 번호의 숫자가 같을 수도 있습니다.</dd>
+      </dl>
+      <h2 id="responsible">책임 있는 복권 이용</h2>
+      <p>거주 지역의 법정 연령과 규정을 확인하세요. 구입한다면 잃어도 생활에 지장이 없는 금액을 미리 정하고, 손실을 만회하려고 지출을 늘리지 마세요. 지출이나 이용을 조절하기 어렵다면 잠시 중단하고 지역의 도박 문제 상담 서비스를 이용하세요.</p>
+      <section id="en" lang="en">
+        <h2>English</h2>
+        <p>Select a country, game and quantity, then generate, copy or clear the results. Separate ticket numbers are chosen by the player. A bonus marked as simulated is drawn by the operator. The browser uses Web Crypto where available and Math.random otherwise. Random picks do not improve the odds. Observe local age rules, set a spending limit and avoid chasing losses.</p>
+      </section>
+      <section id="ja" lang="ja">
+        <h2>日本語</h2>
+        <p>国・宝くじ・口数を選んで生成し、必要に応じてコピーやクリアができます。別枠の数字は購入時に選び、「抽せん例」と表示される数字は抽せんで決まります。対応ブラウザではWeb Cryptoを使用し、利用できない場合はMath.randomを使用します。地域の年齢制限を守り、予算を決め、損失を取り戻すための購入は控えてください。</p>
+      </section>
+      <section id="pt-BR" lang="pt-BR">
+        <h2>Português (Brasil)</h2>
+        <p>Selecione país, jogo e quantidade para gerar, copiar ou limpar os resultados. Números de um grupo separado fazem parte da aposta. O bônus rotulado como simulação é decidido no sorteio. O navegador usa Web Crypto quando disponível e Math.random nos demais casos. Respeite a idade mínima local, estabeleça um limite de gastos e evite tentar recuperar perdas.</p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

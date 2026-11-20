@@ -416,6 +416,10 @@
   const TRANSLATIONS = {
     en: {
       configTitle: 'Lottery Configuration',
+      footerNav: 'Site information',
+      footerLinks: ['About', 'Guide', 'Privacy', 'Contact'],
+      footerIndependence: 'World Lottery is an independent service with no affiliation to official lottery operators.',
+      footerResponsible: 'Generating numbers does not improve your odds. Follow local age limits and set a spending limit.',
       resultsGenerated: count => `Lottery sets generated: ${count}.`,
       resultsCleared: 'Results cleared.',
       toastCopyFailed: 'Unable to copy the numbers to the clipboard.',
@@ -456,6 +460,10 @@
     },
     ko: {
       configTitle: '복권 설정',
+      footerNav: '사이트 안내',
+      footerLinks: ['사이트 소개', '이용 안내', '개인정보처리방침', '문의 안내'],
+      footerIndependence: 'World Lottery는 공식 복권 운영사와 관계없는 독립 서비스입니다.',
+      footerResponsible: '번호 생성은 당첨 확률을 높이지 않습니다. 지역의 연령 제한을 지키고, 지출 한도를 정해 이용하세요.',
       resultsGenerated: count => `번호를 ${count}게임 생성했습니다.`,
       resultsCleared: '결과를 초기화했습니다.',
       toastCopyFailed: '번호를 클립보드에 복사하지 못했습니다.',
@@ -496,6 +504,10 @@
     },
     ja: {
       configTitle: '宝くじの設定',
+      footerNav: 'サイト案内',
+      footerLinks: ['サイトについて', '利用ガイド', 'プライバシー', 'お問い合わせ'],
+      footerIndependence: 'World Lotteryは、公式の宝くじ運営元と関係のない独立したサービスです。',
+      footerResponsible: '数字を生成しても当せん確率は上がりません。地域の年齢制限を守り、購入予算を決めてください。',
       resultsGenerated: count => `${count}口分の数字を生成しました。`,
       resultsCleared: '生成結果をクリアしました。',
       toastCopyFailed: '数字をクリップボードにコピーできませんでした。',
@@ -536,6 +548,10 @@
     },
     'pt-BR': {
       configTitle: 'Configuração da loteria',
+      footerNav: 'Informações do site',
+      footerLinks: ['Sobre', 'Guia', 'Privacidade', 'Contato'],
+      footerIndependence: 'O World Lottery é um serviço independente, sem vínculo com as operadoras oficiais de loteria.',
+      footerResponsible: 'Gerar números não aumenta a chance de ganhar. Respeite a idade mínima local e defina um limite de gastos.',
       resultsGenerated: count => `Jogos gerados: ${count}.`,
       resultsCleared: 'Resultados limpos.',
       toastCopyFailed: 'Não foi possível copiar os números para a área de transferência.',
@@ -765,6 +781,15 @@
     btnClear.querySelector('span').textContent = t.btnClear;
     if (resultsHeading) resultsHeading.textContent = t.resultsHeading;
     if (ruleHeading) ruleHeading.textContent = t.ruleHeading;
+
+    const footerNav = document.getElementById('footer-nav');
+    footerNav.setAttribute('aria-label', t.footerNav);
+    footerNav.querySelectorAll('a').forEach((link, index) => {
+      link.textContent = t.footerLinks[index];
+      link.hash = country.lang === 'ko' ? '' : country.lang;
+    });
+    document.getElementById('footer-independence').textContent = t.footerIndependence;
+    document.getElementById('footer-responsible').textContent = t.footerResponsible;
 
     // Update quantity options with localized units
     const currentQty = quantitySelect.value || '5';

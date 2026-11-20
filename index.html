@@ -28,7 +28,7 @@
           </div>
           <div>
             <h1 class="app-title">World Lottery Number Generator</h1>
-            <p class="app-intro">Official draw mechanics &amp; cryptographic number generation for the world's most popular lotteries.</p>
+            <p class="app-intro">Draw rules and random number generation for 14 lotteries.</p>
           </div>
         </div>
         <div class="badge-status" title="Rules and matrices updated for 2026">
@@ -132,14 +132,16 @@
     </main>
 
     <!-- Footer -->
-    <footer class="app-footer" lang="en">
+    <footer class="app-footer">
       <div class="footer-content">
-        <p class="footer-note">
-          <strong>World Lottery Number Generator</strong> &bull; Rules and matrix definitions updated as of November 11, 2026.
-        </p>
-        <p class="footer-disclaimer">
-          Random numbers are generated on your device using cryptographically secure uniform pseudo-random number generators (<kbd>crypto.getRandomValues</kbd>) with modulo-bias elimination. This tool is for personal entertainment and statistical simulation only. Play responsibly.
-        </p>
+        <nav id="footer-nav" class="information-nav footer-nav" aria-label="사이트 안내">
+          <a href="about.html">사이트 소개</a>
+          <a href="guide.html">이용 안내</a>
+          <a href="privacy.html">개인정보처리방침</a>
+          <a href="contact.html">문의 안내</a>
+        </nav>
+        <p id="footer-independence" class="footer-note">World Lottery는 공식 복권 운영사와 관계없는 독립 서비스입니다.</p>
+        <p id="footer-responsible" class="footer-disclaimer">번호 생성은 당첨 확률을 높이지 않습니다. 지역의 연령 제한을 지키고, 지출 한도를 정해 이용하세요.</p>
       </div>
     </footer>
   </div>
