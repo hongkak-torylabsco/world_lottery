@@ -1,6 +1,5 @@
 /**
  * World Lottery Number Generator
- * Accurate rules and pool logic as of November 11, 2026.
  */
 
 (function () {
@@ -37,11 +36,18 @@
   // - Australia Powerball: 7/35 + 1/20 (independent pool)
   // - Brazil Mega-Sena: 6/60 no bonus
   // - Singapore TOTO: 6/49 + 1 additional (remaining main pool)
-  // - South Africa PowerBall: 5/50 + 1/20 (independent pool)
+  // - South Africa PowerBall: 5/50 + 1/16 (independent pool)
 
   const GAMES = [
     {
       id: 'kr-lotto-645',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: '동행복권', url: 'https://m.dhlottery.co.kr/lt645/intro' },
+          { name: '동행복권 추첨 결과', url: 'https://www.dhlottery.co.kr/lt645/winNumber' }
+        ]
+      },
       countryId: 'KR',
       name: 'Korea Lotto 6/45',
       displayName: '로또 6/45 (Lotto 6/45)',
@@ -61,6 +67,12 @@
     },
     {
       id: 'us-powerball',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'Powerball', url: 'https://www.powerball.com/' }
+        ]
+      },
       countryId: 'US',
       name: 'US Powerball',
       displayName: 'Powerball',
@@ -82,6 +94,12 @@
     },
     {
       id: 'us-megamillions',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'Mega Millions', url: 'https://www.megamillions.com/How-To-Play.aspx' }
+        ]
+      },
       countryId: 'US',
       name: 'US Mega Millions',
       displayName: 'Mega Millions',
@@ -103,6 +121,13 @@
     },
     {
       id: 'uk-lotto',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'Allwyn', url: 'https://www.allwyn.co.uk/insights/it-could-be-you-and-it-could-be-you-lotto-enters-exciting-new-chapter-under-allwyn' },
+          { name: 'Gambling Commission', url: 'https://assets.ctfassets.net/j16ev64qyf6l/7jITNNjF4D2gj8yQHRz6Ov/c5cbf75c339e30a55a3d3bd1a7dd54e6/Section_6_Licence_Lotto_-_June_2026.pdf' }
+        ]
+      },
       countryId: 'GB',
       name: 'UK Lotto',
       displayName: 'UK Lotto',
@@ -114,14 +139,20 @@
       },
       ballStyle: 'uk-lotto',
       rulesText: {
-        en: '6 main numbers from 1 to 59 (no replacement) + 1 bonus ball from the remaining 53 numbers.',
-        ko: '1부터 59까지 본번호 6개 추첨 (중복 없음) + 남은 53개 중 보너스 번호 1개 추첨.',
-        ja: '1〜59の中から本数字6個（重複なし）＋ 残り53個からボーナス数字1個を抽選。',
-        'pt-BR': '6 números principais de 1 a 59 (sem reposição) + 1 bola bônus do grupo restante de 53.'
+        en: 'The same ticket numbers enter both rounds. In each round, 6 distinct main numbers are drawn from 1 to 59 and 1 bonus ball from the remaining 53.',
+        ko: '구매한 같은 번호로 두 라운드에 모두 참여합니다. 각 라운드에서 1~59 중 본번호 6개를 중복 없이 뽑고, 남은 53개 중 보너스 번호 1개를 뽑습니다.',
+        ja: '購入した同じ数字で2ラウンドに参加します。各ラウンドでは1〜59から重複なしで本数字6個を選び、残り53個からボーナス数字1個を抽せんします。',
+        'pt-BR': 'Os mesmos números da aposta entram nas duas rodadas. Em cada rodada são sorteados 6 números distintos de 1 a 59 e 1 bola bônus entre os 53 restantes.'
       }
     },
     {
       id: 'eu-euromillions',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'FDJ', url: 'https://cdn-media.fdj.fr/static/contrib/files/pdf/2025-03-reglement-euromillions.pdf' }
+        ]
+      },
       countryId: 'EU',
       name: 'EuroMillions',
       displayName: 'EuroMillions',
@@ -143,6 +174,13 @@
     },
     {
       id: 'eu-eurojackpot',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'LOTTO.de', url: 'https://www.lotto.de/eurojackpot/spielregeln' },
+          { name: 'Eurojackpot', url: 'https://www.eurojackpot.com/en/results/' }
+        ]
+      },
       countryId: 'EU',
       name: 'EuroJackpot',
       displayName: 'EuroJackpot',
@@ -164,6 +202,12 @@
     },
     {
       id: 'jp-loto-6',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: '宝くじ公式サイト', url: 'https://www.takarakuji-official.jp/kuji/loto/loto6/introduction2.html' }
+        ]
+      },
       countryId: 'JP',
       name: 'Japan LOTO 6',
       displayName: 'ロト6 (LOTO 6)',
@@ -183,6 +227,13 @@
     },
     {
       id: 'jp-loto-7',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'みずほ銀行', url: 'https://www.mizuhobank.co.jp/takarakuji/products/loto7/index.html' },
+          { name: '宝くじ公式サイト', url: 'https://www.takarakuji-official.jp/news/pdf/791.pdf' }
+        ]
+      },
       countryId: 'JP',
       name: 'Japan LOTO 7',
       displayName: 'ロト7 (LOTO 7)',
@@ -202,6 +253,12 @@
     },
     {
       id: 'ca-lotto-649',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'ILC / OLG', url: 'https://www.olg.ca/content/dam/olg/web/product/rules-game-conditions/Lotto_649_Game_Conditions-EN_in_effect_Jan_22_2024.pdf' }
+        ]
+      },
       countryId: 'CA',
       name: 'Canada Lotto 6/49',
       displayName: 'Lotto 6/49',
@@ -213,14 +270,20 @@
       },
       ballStyle: 'canada',
       rulesText: {
-        en: '6 main numbers from 1 to 49 (no replacement) + 1 bonus ball from the remaining 43 numbers.',
-        ko: '1부터 49까지 본번호 6개 추첨 (중복 없음) + 남은 43개 중 보너스 번호 1개 추첨.',
-        ja: '1〜49の中から本数字6個（重複なし）＋ 残り43個からボーナス数字1個を抽選。',
-        'pt-BR': '6 números principais de 1 a 49 (sem reposição) + 1 bola bônus do grupo restante de 43.'
+        en: 'Classic Draw: 6 distinct main numbers from 1 to 49 and 1 bonus ball from the remaining 43. The lottery automatically assigns a 10-digit number for the separate Gold Ball Draw.',
+        ko: 'Classic Draw에서는 1~49 중 본번호 6개를 중복 없이 뽑고, 남은 43개 중 보너스 번호 1개를 뽑습니다. 별도 Gold Ball Draw의 10자리 번호는 복권 운영사가 자동으로 부여합니다.',
+        ja: 'Classic Drawでは1〜49から重複なしで本数字6個、残り43個からボーナス数字1個を抽せんします。別のGold Ball Draw用の10桁番号は運営元が自動で割り当てます。',
+        'pt-BR': 'Classic Draw: 6 números distintos de 1 a 49 e 1 bola bônus entre os 43 restantes. A loteria atribui automaticamente um número de 10 dígitos para o sorteio separado Gold Ball Draw.'
       }
     },
     {
       id: 'au-oz-lotto',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'The Lott', url: 'https://help.thelott.com/hc/en-us/articles/4416863329689-How-do-I-play-the-Oz-Lotto-game' }
+        ]
+      },
       countryId: 'AU',
       name: 'Australia Oz Lotto',
       displayName: 'Oz Lotto',
@@ -240,6 +303,12 @@
     },
     {
       id: 'au-powerball',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'The Lott', url: 'https://help.thelott.com/hc/en-us/articles/4416863320217-How-do-I-play-the-Powerball-game' }
+        ]
+      },
       countryId: 'AU',
       name: 'Australia Powerball',
       displayName: 'Powerball (Australia)',
@@ -261,6 +330,13 @@
     },
     {
       id: 'br-mega-sena',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'Loterias CAIXA', url: 'https://loterias.caixa.gov.br/Paginas/mega-sena.aspx' },
+          { name: 'CAIXA – Regras dos Sorteios', url: 'https://loterias.caixa.gov.br/Paginas/regras-sorteios.aspx' }
+        ]
+      },
       countryId: 'BR',
       name: 'Brazil Mega-Sena',
       displayName: 'Mega-Sena',
@@ -272,14 +348,20 @@
       },
       ballStyle: 'megasena',
       rulesText: {
-        en: '6 main numbers from 1 to 60 (no replacement, no bonus ball).',
-        ko: '1부터 60까지 본번호 6개 추첨 (중복 없음, 보너스 공 없음).',
-        ja: '1〜60の中から本数字6個（重複なし、ボーナス数字なし）。',
-        'pt-BR': '6 números principais de 1 a 60 (sem reposição, sem bola bônus).'
+        en: 'Choose 6 to 20 numbers from 1 to 60. This generator uses the minimum 6-number entry. The draw selects 6 distinct numbers with no bonus ball.',
+        ko: '구매 시 1~60 중 6~20개를 선택할 수 있습니다. 이 사이트는 최소 방식인 6개를 생성합니다. 추첨에서는 중복 없이 6개를 뽑으며 보너스 번호는 없습니다.',
+        ja: '購入時は1〜60から6〜20個を選びます。このサイトでは最少の6個を生成します。抽せんでは重複なしで6個を選び、ボーナス数字はありません。',
+        'pt-BR': 'Marque de 6 a 20 números de 1 a 60. Este gerador usa a aposta mínima de 6 números. São sorteados 6 números distintos, sem bola bônus.'
       }
     },
     {
       id: 'sg-toto',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        sources: [
+          { name: 'Singapore Pools', url: 'https://www.singaporepools.com.sg/en/rules/Pages/pdf/toto-game-rules.pdf' }
+        ]
+      },
       countryId: 'SG',
       name: 'Singapore TOTO',
       displayName: 'TOTO',
@@ -299,6 +381,14 @@
     },
     {
       id: 'za-powerball',
+      rulesReview: {
+        checkedOn: '2026-11-20',
+        operatorRulesUnverified: true,
+        sources: [
+          { name: 'Sizekhaya', url: 'https://sizekhaya.co.za/' },
+          { name: 'Capitec', url: 'https://www.capitecbank.co.za/globalassets/pages/home/personal/lotto/lotto-terms-and-conditions-.pdf' }
+        ]
+      },
       countryId: 'ZA',
       name: 'South Africa PowerBall',
       displayName: 'PowerBall',
@@ -306,16 +396,16 @@
       bonus: {
         type: 'independent',
         min: 1,
-        max: 20,
+        max: 16,
         count: 1,
         labelKey: 'powerball'
       },
       ballStyle: 'za-powerball',
       rulesText: {
-        en: '5 main numbers from 1 to 50 (no replacement) + 1 PowerBall from independent pool 1 to 20.',
-        ko: '1부터 50까지 본번호 5개 (중복 없음) + 독립 풀 1부터 20까지 파워볼 1개 추첨.',
-        ja: '1〜50の中から本数字5個（重複なし）＋ 1〜20の独立枠からパワーボール1個。',
-        'pt-BR': '5 números principais de 1 a 50 (sem reposição) + 1 PowerBall do grupo independente de 1 a 20.'
+        en: '5 main numbers from 1 to 50 (no replacement) + 1 PowerBall from a separate pool of 1 to 16.',
+        ko: '1~50에서 본번호 5개(중복 없음)와 별도 번호 풀 1~16에서 파워볼 1개를 선택합니다.',
+        ja: '1〜50から異なる本数字5個と、別枠の1〜16からパワーボール1個を選びます。',
+        'pt-BR': 'Escolha 5 números distintos de 1 a 50 e 1 PowerBall de um grupo separado de 1 a 16.'
       }
     }
   ];
@@ -348,6 +438,12 @@
       toastCopiedLine: 'Set numbers copied to clipboard!',
       mainLabel: 'Main Numbers',
       ruleHeading: 'Official Draw Mechanics',
+      pickExtra: label => `The ticket includes both the main numbers and the separate ${label} selection.`,
+      drawOnly: label => `Choose only the main numbers for the ticket. The ${label} shown in the generated set is a draw simulation.`,
+      sourceLabel: 'Sources',
+      checkedLabel: 'Checked',
+      operatorRulesUnverified: 'Operator rules unverified. The number ranges come from Capitec’s ticket terms.',
+      simulatedLabel: label => `${label} (simulated)`,
       ballLabels: {
         bonus: 'Bonus',
         powerball: 'Powerball',
@@ -382,6 +478,12 @@
       toastCopiedLine: '해당 게임 번호가 클립보드에 복사되었습니다!',
       mainLabel: '메인 번호',
       ruleHeading: '공식 추첨 규칙',
+      pickExtra: label => `구매할 때 본번호와 별도 번호(${label})를 모두 선택합니다.`,
+      drawOnly: label => `구매할 때는 본번호만 선택합니다. 생성 결과의 ${label} 표시는 추첨을 재현한 예시입니다.`,
+      sourceLabel: '출처',
+      checkedLabel: '확인일',
+      operatorRulesUnverified: '운영사 규칙 원문 미검증. 번호 범위는 Capitec 판매 약관에서 확인했습니다.',
+      simulatedLabel: label => `${label}(추첨 예시)`,
       ballLabels: {
         bonus: '보너스',
         powerball: '파워볼',
@@ -416,6 +518,12 @@
       toastCopiedLine: '選択した数字がクリップボードにコピーされました！',
       mainLabel: '本数字',
       ruleHeading: '公式抽選ルール',
+      pickExtra: label => `購入時は本数字と別枠の数字（${label}）の両方を選びます。`,
+      drawOnly: label => `購入時に選ぶのは本数字だけです。生成結果の「${label}」は抽せんのシミュレーションです。`,
+      sourceLabel: '出典',
+      checkedLabel: '確認日',
+      operatorRulesUnverified: '運営元の規則原文は未確認です。数字の範囲はCapitecの販売規約で確認しました。',
+      simulatedLabel: label => `${label}（抽せん例）`,
       ballLabels: {
         bonus: 'ボーナス数字',
         powerball: 'パワーボール',
@@ -450,6 +558,12 @@
       toastCopiedLine: 'Jogo copiado para a área de transferência!',
       mainLabel: 'Números Principais',
       ruleHeading: 'Regras Oficiais do Sorteio',
+      pickExtra: label => `Na aposta, escolha os números principais e também a seleção separada de ${label}.`,
+      drawOnly: label => `Na aposta, escolha apenas os números principais. O campo “${label}” no jogo gerado é uma simulação do sorteio.`,
+      sourceLabel: 'Fontes',
+      checkedLabel: 'Data da consulta',
+      operatorRulesUnverified: 'Regulamento da operadora não verificado. Os intervalos foram consultados nos termos de venda do Capitec.',
+      simulatedLabel: label => `${label} (simulação)`,
       ballLabels: {
         bonus: 'Bônus',
         powerball: 'Powerball',
@@ -539,9 +653,9 @@
   let btnGenerate = null;
   let btnCopyAll = null;
   let btnClear = null;
-  let ruleContainer = null;
   let ruleHeading = null;
   let ruleText = null;
+  let ruleSources = null;
   let resultsHeading = null;
   let resultsContainer = null;
   let emptyState = null;
@@ -557,9 +671,9 @@
     btnGenerate = document.getElementById('btn-generate');
     btnCopyAll = document.getElementById('btn-copy-all');
     btnClear = document.getElementById('btn-clear');
-    ruleContainer = document.getElementById('rule-container');
     ruleHeading = document.getElementById('rule-heading');
     ruleText = document.getElementById('rule-text');
+    ruleSources = document.getElementById('rule-sources');
     resultsHeading = document.getElementById('results-heading');
     resultsContainer = document.getElementById('results-container');
     emptyState = document.getElementById('empty-state');
@@ -666,15 +780,44 @@
       quantitySelect.appendChild(opt);
     });
 
-    // Update rule text
-    if (ruleText && game) {
-      ruleText.textContent = game.rulesText[country.lang] || game.rulesText.en;
-    }
+    updateRules(game, country.lang, t);
 
     // Update empty state text if empty
     if (emptyState && currentResults.length === 0) {
       emptyState.textContent = t.emptyState;
     }
+  }
+
+  function updateRules(game, lang, t) {
+    const { bonus, rulesReview } = game;
+    const label = t.ballLabels[bonus.labelKey];
+    const paragraphs = [game.rulesText[lang] || game.rulesText.en];
+    if (bonus.type === 'independent') paragraphs.push(t.pickExtra(label));
+    if (bonus.type === 'remaining_main') paragraphs.push(t.drawOnly(label));
+    if (rulesReview.operatorRulesUnverified) paragraphs.push(t.operatorRulesUnverified);
+    ruleText.textContent = paragraphs.join(' ');
+
+    const date = document.createElement('time');
+    date.dateTime = rulesReview.checkedOn;
+    date.textContent = new Intl.DateTimeFormat(lang, {
+      dateStyle: 'medium',
+      timeZone: 'UTC'
+    }).format(new Date(rulesReview.checkedOn));
+
+    ruleSources.replaceChildren(`${t.sourceLabel} · `);
+    rulesReview.sources.forEach(({ name, url }, index) => {
+      const link = document.createElement('a');
+      link.href = url;
+      link.textContent = name;
+      if (index > 0) ruleSources.append(' / ');
+      ruleSources.append(link);
+    });
+    ruleSources.append(` · ${t.checkedLabel} `, date);
+  }
+
+  function getExtraLabel(game, t) {
+    const label = t.ballLabels[game.bonus.labelKey];
+    return game.bonus.type === 'remaining_main' ? t.simulatedLabel(label) : label;
   }
 
   // 8. Ball Styling Helpers
@@ -741,7 +884,7 @@
     const country = getCurrentCountry();
     const t = getI18n();
 
-    const bonusLabelText = game.bonus.labelKey ? (t.ballLabels[game.bonus.labelKey] || 'Bonus') : '';
+    const bonusLabelText = getExtraLabel(game, t);
 
     sets.forEach((set, index) => {
       const row = document.createElement('div');
@@ -878,7 +1021,7 @@
 
     const mainStr = set.main.join(', ');
     if (set.bonus && set.bonus.length > 0) {
-      const bLabel = game.bonus.labelKey ? (t.ballLabels[game.bonus.labelKey] || 'Bonus') : 'Bonus';
+      const bLabel = getExtraLabel(game, t);
       const bonusStr = set.bonus.join(', ');
       return `${prefix}${mainStr} + [${bLabel}: ${bonusStr}]`;
     }
@@ -904,6 +1047,7 @@
   async function copyAllResults() {
     if (!currentResults || currentResults.length === 0) return;
     const game = getCurrentGame();
+    const t = getI18n();
     const lines = [
       `World Lottery Number Generator - ${game.name}`,
       `Date: ${new Date().toISOString().split('T')[0]}`,
@@ -915,10 +1059,10 @@
     });
 
     lines.push('----------------------------------------');
-    lines.push('Generated with verified mechanics (as of Nov 11, 2026).');
+    lines.push(`${t.ruleHeading} · ${t.checkedLabel} ${game.rulesReview.checkedOn}`);
+    if (game.rulesReview.operatorRulesUnverified) lines.push(t.operatorRulesUnverified);
 
     const copied = await copyText(lines.join('\n'));
-    const t = getI18n();
     showToast(copied ? t.toastCopiedAll : t.toastCopyFailed);
   }
 

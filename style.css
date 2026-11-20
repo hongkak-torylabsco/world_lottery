@@ -368,6 +368,20 @@ body {
   color: #475569;
 }
 
+.rule-sources {
+  margin-top: 8px;
+  color: #475569;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.rule-sources a {
+  color: #1e40af;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+}
+
 /* Results Card */
 .results-card {
   min-height: 240px;
