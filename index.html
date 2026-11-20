@@ -13,7 +13,7 @@
 <body>
   <div class="app-layout">
     <!-- Header: Kept in English (Requirement 3) -->
-    <header class="app-header">
+    <header class="app-header" lang="en">
       <div class="header-content">
         <div class="header-brand">
           <div class="logo-icon" aria-hidden="true">
@@ -39,13 +39,13 @@
       <div class="generator-container">
         <!-- Configuration Card -->
         <section class="card config-card" aria-labelledby="config-title">
-          <h2 id="config-title" class="sr-only">Lottery Configuration</h2>
+          <h2 id="config-title" class="sr-only">복권 설정</h2>
           <form class="config-grid" onsubmit="event.preventDefault();">
             <!-- Country: English label (Requirement 3) -->
             <div class="form-group">
-              <label for="country-select" class="form-label static-english-label">Country</label>
+              <label for="country-select" class="form-label static-english-label" lang="en">Country</label>
               <div class="select-wrapper">
-                <select id="country-select" name="country" class="form-select" aria-label="Country">
+                <select id="country-select" name="country" class="form-select">
                   <!-- Populated dynamically without flag icons or 2-letter prefixes (Requirement 4) -->
                 </select>
               </div>
@@ -53,9 +53,9 @@
 
             <!-- Lottery Name: English label (Requirement 3) -->
             <div class="form-group">
-              <label for="game-select" class="form-label static-english-label">Lottery Name</label>
+              <label for="game-select" class="form-label static-english-label" lang="en">Lottery Name</label>
               <div class="select-wrapper">
-                <select id="game-select" name="game" class="form-select" aria-label="Lottery Name">
+                <select id="game-select" name="game" class="form-select">
                   <!-- Populated dynamically based on selected country -->
                 </select>
               </div>
@@ -65,7 +65,7 @@
             <div class="form-group">
               <label id="quantity-label" for="quantity-select" class="form-label">생성 수량</label>
               <div class="select-wrapper">
-                <select id="quantity-select" name="quantity" class="form-select" aria-label="Quantity">
+                <select id="quantity-select" name="quantity" class="form-select">
                   <option value="1">1게임</option>
                   <option value="3">3게임</option>
                   <option value="5" selected>5게임</option>
@@ -120,7 +120,7 @@
             상단에서 복권 종류와 수량을 선택한 후 "번호 생성하기" 버튼을 눌러주세요.
           </div>
 
-          <div id="results-container" class="results-container" role="region" aria-label="Generated Lottery Lines">
+          <div id="results-container" class="results-container">
             <!-- Rendered dynamically by script.js -->
           </div>
         </section>
@@ -128,7 +128,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="app-footer">
+    <footer class="app-footer" lang="en">
       <div class="footer-content">
         <p class="footer-note">
           <strong>World Lottery Number Generator</strong> &bull; Rules and matrix definitions updated as of November 11, 2026.

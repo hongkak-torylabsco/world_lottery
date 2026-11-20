@@ -325,6 +325,10 @@
   // Requirement 5: Localize the remaining interface, including number units, according to selected country.
   const TRANSLATIONS = {
     en: {
+      configTitle: 'Lottery Configuration',
+      resultsGenerated: count => `Lottery sets generated: ${count}.`,
+      resultsCleared: 'Results cleared.',
+      toastCopyFailed: 'Unable to copy the numbers to the clipboard.',
       quantityLabel: 'Quantity',
       quantityUnits: {
         1: '1 set',
@@ -355,6 +359,10 @@
       }
     },
     ko: {
+      configTitle: '복권 설정',
+      resultsGenerated: count => `번호를 ${count}게임 생성했습니다.`,
+      resultsCleared: '결과를 초기화했습니다.',
+      toastCopyFailed: '번호를 클립보드에 복사하지 못했습니다.',
       quantityLabel: '생성 수량',
       quantityUnits: {
         1: '1게임',
@@ -385,6 +393,10 @@
       }
     },
     ja: {
+      configTitle: '宝くじの設定',
+      resultsGenerated: count => `${count}口分の数字を生成しました。`,
+      resultsCleared: '生成結果をクリアしました。',
+      toastCopyFailed: '数字をクリップボードにコピーできませんでした。',
       quantityLabel: '購入口数',
       quantityUnits: {
         1: '1口',
@@ -415,6 +427,10 @@
       }
     },
     'pt-BR': {
+      configTitle: 'Configuração da loteria',
+      resultsGenerated: count => `Jogos gerados: ${count}.`,
+      resultsCleared: 'Resultados limpos.',
+      toastCopyFailed: 'Não foi possível copiar os números para a área de transferência.',
       quantityLabel: 'Quantidade de Jogos',
       quantityUnits: {
         1: '1 jogo',
@@ -629,9 +645,10 @@
     // Localize remaining interface (Requirement 5)
     // NOTE: Title, intro, Country label, Lottery Name label are KEPT IN ENGLISH (Requirement 3)
     if (quantityLabel) quantityLabel.textContent = t.quantityLabel;
-    if (btnGenerate) btnGenerate.textContent = t.btnGenerate;
-    if (btnCopyAll) btnCopyAll.textContent = t.btnCopyAll;
-    if (btnClear) btnClear.textContent = t.btnClear;
+    document.getElementById('config-title').textContent = t.configTitle;
+    btnGenerate.querySelector('span').textContent = t.btnGenerate;
+    btnCopyAll.querySelector('span').textContent = t.btnCopyAll;
+    btnClear.querySelector('span').textContent = t.btnClear;
     if (resultsHeading) resultsHeading.textContent = t.resultsHeading;
     if (ruleHeading) ruleHeading.textContent = t.ruleHeading;
 
@@ -657,11 +674,6 @@
     // Update empty state text if empty
     if (emptyState && currentResults.length === 0) {
       emptyState.textContent = t.emptyState;
-    }
-
-    // If there are already generated results, re-render them with new labels
-    if (currentResults.length > 0) {
-      renderResults(currentResults, false);
     }
   }
 
@@ -780,6 +792,7 @@
       // Main balls group
       const mainGroup = document.createElement('div');
       mainGroup.className = 'balls-group main-balls';
+      mainGroup.setAttribute('role', 'group');
       mainGroup.setAttribute('aria-label', t.mainLabel);
 
       set.main.forEach((num, ballIdx) => {
@@ -804,6 +817,7 @@
 
         const bonusGroup = document.createElement('div');
         bonusGroup.className = 'balls-group bonus-balls';
+        bonusGroup.setAttribute('role', 'group');
         bonusGroup.setAttribute('aria-label', bonusLabelText);
 
         const bonusBadge = document.createElement('span');
@@ -829,7 +843,7 @@
       resultsContainer.appendChild(row);
     });
 
-    announce(`${sets.length} ${game.name} combinations generated.`);
+    announce(t.resultsGenerated(sets.length));
   }
 
   // 10. Draw Action
@@ -848,7 +862,7 @@
   function handleClear() {
     currentResults = [];
     renderResults([], false);
-    announce('Results cleared.');
+    announce(getI18n().resultsCleared);
   }
 
   // 11. Clipboard Copy Helpers
@@ -871,30 +885,25 @@
     return `${prefix}${mainStr}`;
   }
 
-  function copySingleLine(game, set, lineNum, buttonElement) {
+  async function copySingleLine(game, set, lineNum, buttonElement) {
     const text = `${game.name} - ${formatLineString(game, set, lineNum)}`;
-    navigator.clipboard.writeText(text).then(() => {
-      const t = getI18n();
-      showToast(t.toastCopiedLine);
-      const span = buttonElement.querySelector('span');
-      if (span) {
-        const originalText = span.textContent;
-        span.textContent = t.copiedLine;
-        buttonElement.classList.add('copied');
-        setTimeout(() => {
-          span.textContent = originalText;
-          buttonElement.classList.remove('copied');
-        }, 1600);
-      }
-    }).catch(() => {
-      fallbackCopy(text);
-    });
+    const copied = await copyText(text);
+    const t = getI18n();
+    showToast(copied ? t.toastCopiedLine : t.toastCopyFailed);
+
+    if (!copied || !buttonElement.isConnected) return;
+    const span = buttonElement.querySelector('span');
+    span.textContent = t.copiedLine;
+    buttonElement.classList.add('copied');
+    setTimeout(() => {
+      span.textContent = t.btnCopyLine;
+      buttonElement.classList.remove('copied');
+    }, 1600);
   }
 
-  function copyAllResults() {
+  async function copyAllResults() {
     if (!currentResults || currentResults.length === 0) return;
     const game = getCurrentGame();
-    const t = getI18n();
     const lines = [
       `World Lottery Number Generator - ${game.name}`,
       `Date: ${new Date().toISOString().split('T')[0]}`,
@@ -908,29 +917,46 @@
     lines.push('----------------------------------------');
     lines.push('Generated with verified mechanics (as of Nov 11, 2026).');
 
-    const fullText = lines.join('\n');
-    navigator.clipboard.writeText(fullText).then(() => {
-      showToast(t.toastCopiedAll);
-    }).catch(() => {
-      fallbackCopy(fullText);
-    });
+    const copied = await copyText(lines.join('\n'));
+    const t = getI18n();
+    showToast(copied ? t.toastCopiedAll : t.toastCopyFailed);
   }
 
-  function fallbackCopy(text) {
+  async function copyText(text) {
+    try {
+      const clipboard = navigator.clipboard;
+      if (typeof clipboard?.writeText === 'function') {
+        await clipboard.writeText(text);
+        return true;
+      }
+    } catch {
+      // Clipboard access may be blocked. Try the selection-based copy below.
+    }
+
+    if (typeof document.execCommand !== 'function') return false;
+
+    const previousFocus = document.activeElement;
     const textArea = document.createElement('textarea');
     textArea.value = text;
+    textArea.readOnly = true;
+    textArea.tabIndex = -1;
     textArea.style.position = 'fixed';
+    textArea.style.top = '0';
+    textArea.style.left = '0';
     textArea.style.opacity = '0';
     document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
     try {
-      document.execCommand('copy');
-      showToast(getI18n().toastCopiedAll);
-    } catch (err) {
-      alert('Unable to copy to clipboard.');
+      textArea.focus({ preventScroll: true });
+      textArea.select();
+      return document.execCommand('copy') === true;
+    } catch {
+      return false;
+    } finally {
+      textArea.remove();
+      if (previousFocus?.isConnected && previousFocus !== document.body) {
+        previousFocus.focus({ preventScroll: true });
+      }
     }
-    document.body.removeChild(textArea);
   }
 
   // 12. Event Listeners

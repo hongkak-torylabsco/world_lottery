@@ -827,6 +827,29 @@ body {
    Responsive Adaptations
    ========================================================================== */
 
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot,
+  .result-row,
+  .ball-animate {
+    animation: none;
+  }
+
+  .select-wrapper::after,
+  .form-select,
+  .btn,
+  .result-row,
+  .btn-copy-line,
+  .lotto-ball,
+  .toast {
+    transition: none;
+  }
+
+  .btn-primary:hover:not(:disabled),
+  .lotto-ball:hover {
+    transform: none;
+  }
+}
+
 @media (max-width: 640px) {
   :root {
     --ball-size: 38px;
