@@ -415,6 +415,31 @@
   // Requirement 5: Localize the remaining interface, including number units, according to selected country.
   const TRANSLATIONS = {
     en: {
+      stats: {
+        set: "Set statistics",
+        odd: "Odd",
+        even: "Even",
+        sum: "Sum",
+        min: "Minimum",
+        max: "Maximum",
+        mean: "Mean",
+        ranges: "Number ranges",
+        groups: "Consecutive groups",
+        noGroups: "No consecutive numbers",
+        heading: "Saved number statistics",
+        scope: "Analyze",
+        records: "Records analyzed",
+        meanSum: "Mean sum",
+        most: "Most frequent",
+        least: "Least frequent",
+        empty: "No matching sets",
+        excluded: "Excluded sets with different rules",
+        number: "Number",
+        count: "Count",
+        share: "Share of sets",
+        chart: "Main number frequency",
+        notice: "These statistics describe generated numbers. They do not predict draws or improve your odds."
+      },
       saved: {
         heading: "Saved numbers",
         history: "History",
@@ -478,6 +503,31 @@
       }
     },
     ko: {
+      stats: {
+        set: "조합 통계",
+        odd: "홀수",
+        even: "짝수",
+        sum: "합계",
+        min: "최솟값",
+        max: "최댓값",
+        mean: "평균",
+        ranges: "번호 구간",
+        groups: "연속 그룹",
+        noGroups: "연속 번호 없음",
+        heading: "저장 번호 통계",
+        scope: "분석 범위",
+        records: "분석한 조합",
+        meanSum: "평균 합계",
+        most: "최다 출현",
+        least: "최소 출현",
+        empty: "분석할 조합이 없습니다",
+        excluded: "규칙이 달라 제외한 조합",
+        number: "번호",
+        count: "횟수",
+        share: "포함된 조합 비율",
+        chart: "본번호 출현 빈도",
+        notice: "생성한 번호의 분포를 보여줍니다. 추첨 결과를 예측하거나 당첨 확률을 높이지 않습니다."
+      },
       saved: {
         heading: "저장된 번호",
         history: "생성 기록",
@@ -541,6 +591,31 @@
       }
     },
     ja: {
+      stats: {
+        set: "組み合わせの統計",
+        odd: "奇数",
+        even: "偶数",
+        sum: "合計",
+        min: "最小値",
+        max: "最大値",
+        mean: "平均",
+        ranges: "数字の範囲",
+        groups: "連続するグループ",
+        noGroups: "連続する数字なし",
+        heading: "保存した数字の統計",
+        scope: "分析対象",
+        records: "分析した組み合わせ",
+        meanSum: "合計の平均",
+        most: "最多出現",
+        least: "最少出現",
+        empty: "該当する組み合わせはありません",
+        excluded: "ルールが異なるため除外した組み合わせ",
+        number: "数字",
+        count: "回数",
+        share: "組み合わせに含まれる割合",
+        chart: "本数字の出現頻度",
+        notice: "生成した数字の分布を表示します。抽せんを予測したり、当せん確率を上げたりする機能ではありません。"
+      },
       saved: {
         heading: "保存した数字",
         history: "生成履歴",
@@ -604,6 +679,31 @@
       }
     },
     'pt-BR': {
+      stats: {
+        set: "Estatísticas do jogo",
+        odd: "Ímpares",
+        even: "Pares",
+        sum: "Soma",
+        min: "Mínimo",
+        max: "Máximo",
+        mean: "Média",
+        ranges: "Faixas de números",
+        groups: "Grupos consecutivos",
+        noGroups: "Sem números consecutivos",
+        heading: "Estatísticas dos números salvos",
+        scope: "Analisar",
+        records: "Jogos analisados",
+        meanSum: "Média das somas",
+        most: "Maior frequência",
+        least: "Menor frequência",
+        empty: "Nenhum jogo correspondente",
+        excluded: "Jogos excluídos por regras diferentes",
+        number: "Número",
+        count: "Ocorrências",
+        share: "Proporção de jogos",
+        chart: "Frequência dos números principais",
+        notice: "Estas estatísticas mostram a distribuição dos números gerados. Não preveem sorteios nem aumentam a chance de ganhar."
+      },
       saved: {
         heading: "Números salvos",
         history: "Histórico",
@@ -978,6 +1078,211 @@
       record.bonus.every(number => !record.main.includes(number));
   }
 
+  function analyzeNumberLine(numbers, pool) {
+    if (!validPool(numbers, pool) || numbers.length === 0) return null;
+
+    const sorted = numbers.slice().sort((a, b) => a - b);
+    const sum = sorted.reduce((total, number) => total + number, 0);
+    const odd = sorted.filter(number => number % 2 !== 0).length;
+    const size = pool.max - pool.min + 1;
+    const rangeCount = Math.min(5, size);
+    const rangeSize = Math.floor(size / rangeCount);
+    const remainder = size % rangeCount;
+    let start = pool.min;
+    const ranges = Array.from({ length: rangeCount }, (_, index) => {
+      const end = start + rangeSize + Number(index < remainder) - 1;
+      const range = { min: start, max: end, count: sorted.filter(number => number >= start && number <= end).length };
+      start = end + 1;
+      return range;
+    });
+
+    const groups = [];
+    let group = [];
+    for (const number of sorted) {
+      if (number !== group.at(-1) + 1) {
+        if (group.length > 1) groups.push(group);
+        group = [];
+      }
+      group.push(number);
+    }
+    if (group.length > 1) groups.push(group);
+
+    return {
+      odd,
+      even: sorted.length - odd,
+      sum,
+      min: sorted[0],
+      max: sorted.at(-1),
+      mean: sum / sorted.length,
+      ranges,
+      groups
+    };
+  }
+
+  function hasSameNumberRules(snapshot, game) {
+    return ['min', 'max', 'count'].every(key => snapshot.main[key] === game.main[key]) &&
+      ['type', 'min', 'max', 'count'].every(key => snapshot.bonus[key] === game.bonus[key]);
+  }
+
+  function analyzeSavedNumbers(records, game) {
+    const counts = new Map(createRange(game.main.min, game.main.max).map(number => [number, 0]));
+    const ids = new Set();
+    let excluded = 0;
+    let odd = 0;
+    let even = 0;
+    let sum = 0;
+
+    for (const record of records) {
+      if (!validRecord(record, 'history') || record.gameId !== game.id ||
+          record.countryId !== game.countryId || ids.has(record.id)) continue;
+      ids.add(record.id);
+      if (!hasSameNumberRules(record.rules, game)) {
+        excluded++;
+        continue;
+      }
+      for (const number of record.main) {
+        counts.set(number, counts.get(number) + 1);
+        if (number % 2 !== 0) odd++;
+        else even++;
+        sum += number;
+      }
+    }
+
+    const total = ids.size - excluded;
+    const frequencies = [...counts].map(([number, count]) => ({ number, count, share: total ? count / total : 0 }));
+    const values = [...counts.values()];
+    const most = Math.max(...values);
+    const least = Math.min(...values);
+    return {
+      total,
+      excluded,
+      odd,
+      even,
+      meanSum: total ? sum / total : null,
+      frequencies,
+      most: total ? frequencies.filter(row => row.count === most).map(row => row.number) : [],
+      least: total ? frequencies.filter(row => row.count === least).map(row => row.number) : []
+    };
+  }
+
+  function statisticsFormatters() {
+    const lang = getCurrentCountry().lang;
+    return {
+      decimal: new Intl.NumberFormat(lang, { maximumFractionDigits: 2 }),
+      percent: new Intl.NumberFormat(lang, { style: 'percent', maximumFractionDigits: 1 })
+    };
+  }
+
+  function renderStatisticsFacts(facts) {
+    const list = document.createElement('dl');
+    list.className = 'statistics-facts';
+    for (const [label, value] of facts) {
+      const group = document.createElement('div');
+      const term = document.createElement('dt');
+      const detail = document.createElement('dd');
+      term.textContent = label;
+      detail.textContent = value;
+      group.append(term, detail);
+      list.append(group);
+    }
+    return list;
+  }
+
+  function formatParity(count, total, percent) {
+    return total ? `${count} (${percent.format(count / total)})` : String(count);
+  }
+
+  function renderLineStatistics(record, t) {
+    const stats = analyzeNumberLine(record.main, record.rules.main);
+    const { decimal, percent } = statisticsFormatters();
+    const details = document.createElement('details');
+    details.className = 'line-statistics';
+    const summary = document.createElement('summary');
+    summary.textContent = `${t.set} · ${t.odd} ${stats.odd} / ${t.even} ${stats.even} · ${t.sum} ${stats.sum}`;
+    details.append(summary, renderStatisticsFacts([
+      [t.odd, formatParity(stats.odd, record.main.length, percent)],
+      [t.even, formatParity(stats.even, record.main.length, percent)],
+      [t.sum, stats.sum],
+      [t.min, stats.min],
+      [t.max, stats.max],
+      [t.mean, decimal.format(stats.mean)],
+      [t.ranges, stats.ranges.map(range => `${range.min}–${range.max} (${range.count})`).join(' · ')],
+      [t.groups, stats.groups.length ? `${stats.groups.length} · ${stats.groups.map(group => group.join('–')).join(', ')}` : `0 · ${t.noGroups}`]
+    ]));
+    return details;
+  }
+
+  function renderFrequencyTable(stats, t, percent) {
+    const table = document.createElement('table');
+    table.setAttribute('aria-labelledby', 'statistics-chart-heading');
+    const headings = table.createTHead().insertRow();
+    for (const label of [t.number, t.count, t.share]) {
+      const cell = document.createElement('th');
+      cell.scope = 'col';
+      cell.textContent = label;
+      headings.append(cell);
+    }
+    const rows = table.createTBody();
+    for (const { number, count, share } of stats.frequencies) {
+      const row = rows.insertRow();
+      const numberCell = document.createElement('th');
+      numberCell.scope = 'row';
+      numberCell.textContent = number;
+      row.append(numberCell);
+      const frequency = document.createElement('div');
+      frequency.className = 'statistics-frequency';
+      const bar = document.createElement('meter');
+      bar.max = stats.total || 1;
+      bar.value = count;
+      bar.setAttribute('aria-hidden', 'true');
+      frequency.append(String(count), bar);
+      row.insertCell().append(frequency);
+      row.insertCell().textContent = percent.format(share);
+    }
+    return table;
+  }
+
+  function renderSavedStatistics() {
+    const t = getI18n();
+    const game = getCurrentGame();
+    const scope = document.getElementById('statistics-scope');
+    scope.options[0].textContent = t.saved.history;
+    scope.options[1].textContent = t.saved.favorites;
+    document.getElementById('statistics-heading').textContent = t.stats.heading;
+    document.getElementById('statistics-scope-label').textContent = t.stats.scope;
+    document.getElementById('statistics-notice').textContent = t.stats.notice;
+    document.getElementById('statistics-game').textContent = game.displayName;
+    document.getElementById('statistics-chart-heading').textContent = t.stats.chart;
+
+    const stats = analyzeSavedNumbers(saved[scope.value], game);
+    const { decimal, percent } = statisticsFormatters();
+    const totalNumbers = stats.odd + stats.even;
+    const facts = [
+      [t.stats.records, stats.total],
+      [t.stats.odd, formatParity(stats.odd, totalNumbers, percent)],
+      [t.stats.even, formatParity(stats.even, totalNumbers, percent)]
+    ];
+    if (stats.excluded) facts.push([t.stats.excluded, stats.excluded]);
+    if (stats.total) {
+      facts.push(
+        [t.stats.meanSum, decimal.format(stats.meanSum)],
+        [t.stats.most, stats.most.join(', ')],
+        [t.stats.least, stats.least.join(', ')]
+      );
+    }
+    const summary = document.getElementById('statistics-summary');
+    summary.replaceChildren(renderStatisticsFacts(facts));
+    if (!stats.total) {
+      const empty = document.createElement('p');
+      empty.className = 'statistics-note';
+      empty.textContent = t.stats.empty;
+      summary.append(empty);
+    }
+    const chart = document.getElementById('statistics-chart');
+    chart.replaceChildren(renderFrequencyTable(stats, t.stats, percent));
+    chart.scrollTop = 0;
+  }
+
   function readSavedList(list) {
     if (unsavedLists.has(list)) return;
     try {
@@ -1084,6 +1389,7 @@
     list.replaceChildren(...entries.map(record => renderSavedRecord(record, t, formatter, isHistory)));
 
     resultsContainer.querySelectorAll('[data-favorite-id]').forEach(setFavoriteButton);
+    renderSavedStatistics();
     if (focused) {
       const replacement = Array.from(list.querySelectorAll('button')).find(button =>
         (focused.dataset.favoriteId && button.dataset.favoriteId === focused.dataset.favoriteId) ||
@@ -1299,7 +1605,7 @@
         ballsWrapper.appendChild(bonusGroup);
       }
 
-      row.appendChild(ballsWrapper);
+      row.append(ballsWrapper, renderLineStatistics(set, t.stats));
       resultsContainer.appendChild(row);
     });
 
@@ -1438,6 +1744,7 @@
 
     gameSelect.addEventListener('change', () => {
       updateInterfaceLocalization();
+      renderSavedStatistics();
       handleClear();
     });
 
@@ -1460,6 +1767,7 @@
       renderSaved();
     });
     document.getElementById('clear-history').addEventListener('click', () => removeHistory());
+    document.getElementById('statistics-scope').addEventListener('change', renderSavedStatistics);
     window.addEventListener('storage', event => {
       const lists = Object.keys(SAVED_KEYS).filter(list => event.key === null || event.key === SAVED_KEYS[list]);
       if (lists.length) {
@@ -1500,6 +1808,8 @@
       getRandomInt,
       drawDistinctFromPool,
       generateGameLine,
+      analyzeNumberLine,
+      analyzeSavedNumbers,
       formatLineString
     };
   }

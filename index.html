@@ -142,6 +142,24 @@
           <p id="saved-empty" class="empty-state">아직 생성 기록이 없습니다.</p>
           <ul id="saved-list" class="saved-list"></ul>
         </section>
+
+        <section id="number-statistics" class="card" aria-labelledby="statistics-heading">
+          <h2 id="statistics-heading" class="results-heading">저장 번호 통계</h2>
+          <p id="statistics-notice" class="statistics-note">생성한 번호의 분포를 보여줍니다. 추첨 결과를 예측하거나 당첨 확률을 높이지 않습니다.</p>
+          <div class="statistics-controls">
+            <strong id="statistics-game"></strong>
+            <label for="statistics-scope">
+              <span id="statistics-scope-label">분석 범위</span>
+              <select id="statistics-scope" class="form-select">
+                <option value="history">생성 기록</option>
+                <option value="favorites">즐겨찾기</option>
+              </select>
+            </label>
+          </div>
+          <div id="statistics-summary" role="status"></div>
+          <h3 id="statistics-chart-heading" class="statistics-chart-heading">본번호 출현 빈도</h3>
+          <div id="statistics-chart" class="statistics-chart" role="region" aria-labelledby="statistics-chart-heading" tabindex="0"></div>
+        </section>
       </div>
     </main>
 
