@@ -128,6 +128,20 @@
             <!-- Rendered dynamically by script.js -->
           </div>
         </section>
+
+        <section id="saved-numbers" class="card" aria-labelledby="saved-heading">
+          <h2 id="saved-heading" class="results-heading">저장된 번호</h2>
+          <div class="saved-controls">
+            <div class="saved-actions">
+              <button id="show-history" class="saved-button" type="button" aria-pressed="true" aria-controls="saved-list">생성 기록</button>
+              <button id="show-favorites" class="saved-button" type="button" aria-pressed="false" aria-controls="saved-list">즐겨찾기</button>
+            </div>
+            <button id="clear-history" class="saved-button" type="button">기록 전체 삭제</button>
+          </div>
+          <p id="saved-warning" class="saved-warning" role="status" hidden></p>
+          <p id="saved-empty" class="empty-state">아직 생성 기록이 없습니다.</p>
+          <ul id="saved-list" class="saved-list"></ul>
+        </section>
       </div>
     </main>
 

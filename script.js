@@ -415,6 +415,25 @@
   // Requirement 5: Localize the remaining interface, including number units, according to selected country.
   const TRANSLATIONS = {
     en: {
+      saved: {
+        heading: "Saved numbers",
+        history: "History",
+        favorites: "Favorites",
+        clear: "Clear history",
+        confirmClear: "Clear history? Favorites will be kept.",
+        emptyHistory: "No generation history yet.",
+        emptyFavorites: "No favorites yet.",
+        add: "Add to favorites",
+        remove: "Remove from favorites",
+        delete: "Delete history entry",
+        cleared: "History cleared. Favorites kept.",
+        deleted: "History entry deleted. Any favorite is kept.",
+        added: "Favorite added.",
+        removed: "Favorite removed. History is unchanged.",
+        full: "Favorites are full (100). Remove one to save another.",
+        storageWarning: "Browser storage is unavailable or contains unreadable data. Some changes may last only until you close or reload this page.",
+        favoritedOn: "Favorited"
+      },
       configTitle: 'Lottery Configuration',
       footerNav: 'Site information',
       footerLinks: ['About', 'Guide', 'Privacy', 'Contact'],
@@ -459,6 +478,25 @@
       }
     },
     ko: {
+      saved: {
+        heading: "저장된 번호",
+        history: "생성 기록",
+        favorites: "즐겨찾기",
+        clear: "기록 전체 삭제",
+        confirmClear: "일반 기록을 모두 삭제할까요? 즐겨찾기는 유지됩니다.",
+        emptyHistory: "아직 생성 기록이 없습니다.",
+        emptyFavorites: "아직 즐겨찾기가 없습니다.",
+        add: "즐겨찾기 등록",
+        remove: "즐겨찾기 해제",
+        delete: "기록 삭제",
+        cleared: "일반 기록을 삭제했습니다. 즐겨찾기는 유지됩니다.",
+        deleted: "기록을 삭제했습니다. 즐겨찾기에 등록된 조합은 유지됩니다.",
+        added: "즐겨찾기에 등록했습니다.",
+        removed: "즐겨찾기를 해제했습니다. 일반 기록은 그대로입니다.",
+        full: "즐겨찾기는 최대 100개까지 저장할 수 있습니다. 기존 항목을 해제한 뒤 다시 시도하세요.",
+        storageWarning: "브라우저 저장소에 접근할 수 없거나 일부 데이터를 읽을 수 없습니다. 일부 변경은 페이지를 닫거나 새로고침하면 사라질 수 있습니다.",
+        favoritedOn: "즐겨찾기 등록"
+      },
       configTitle: '복권 설정',
       footerNav: '사이트 안내',
       footerLinks: ['사이트 소개', '이용 안내', '개인정보처리방침', '문의 안내'],
@@ -503,6 +541,25 @@
       }
     },
     ja: {
+      saved: {
+        heading: "保存した数字",
+        history: "生成履歴",
+        favorites: "お気に入り",
+        clear: "履歴をすべて削除",
+        confirmClear: "履歴をすべて削除しますか？ お気に入りは残ります。",
+        emptyHistory: "生成履歴はまだありません。",
+        emptyFavorites: "お気に入りはまだありません。",
+        add: "お気に入りに追加",
+        remove: "お気に入りから解除",
+        delete: "履歴を削除",
+        cleared: "履歴を削除しました。お気に入りは残ります。",
+        deleted: "履歴を削除しました。お気に入りに登録した組み合わせは残ります。",
+        added: "お気に入りに追加しました。",
+        removed: "お気に入りを解除しました。履歴はそのままです。",
+        full: "お気に入りの上限は100件です。追加するには既存の項目を解除してください。",
+        storageWarning: "ブラウザの保存領域にアクセスできないか、一部のデータを読み込めません。ページを閉じたり再読み込みしたりすると、一部の変更が失われることがあります。",
+        favoritedOn: "お気に入り登録"
+      },
       configTitle: '宝くじの設定',
       footerNav: 'サイト案内',
       footerLinks: ['サイトについて', '利用ガイド', 'プライバシー', 'お問い合わせ'],
@@ -547,6 +604,25 @@
       }
     },
     'pt-BR': {
+      saved: {
+        heading: "Números salvos",
+        history: "Histórico",
+        favorites: "Favoritos",
+        clear: "Limpar histórico",
+        confirmClear: "Limpar o histórico? Os favoritos serão mantidos.",
+        emptyHistory: "Ainda não há jogos no histórico.",
+        emptyFavorites: "Ainda não há favoritos.",
+        add: "Adicionar aos favoritos",
+        remove: "Remover dos favoritos",
+        delete: "Excluir do histórico",
+        cleared: "Histórico limpo. Os favoritos foram mantidos.",
+        deleted: "Jogo excluído do histórico. Se estiver nos favoritos, continuará salvo lá.",
+        added: "Adicionado aos favoritos.",
+        removed: "Removido dos favoritos. O histórico permanece igual.",
+        full: "O limite é de 100 favoritos. Remova um para adicionar outro.",
+        storageWarning: "O armazenamento do navegador está indisponível ou contém dados ilegíveis. Algumas alterações podem se perder ao fechar ou recarregar a página.",
+        favoritedOn: "Adicionado aos favoritos"
+      },
       configTitle: 'Configuração da loteria',
       footerNav: 'Informações do site',
       footerLinks: ['Sobre', 'Guia', 'Privacidade', 'Contato'],
@@ -842,7 +918,220 @@
 
   function getExtraLabel(game, t) {
     const label = t.ballLabels[game.bonus.labelKey];
-    return game.bonus.type === 'remaining_main' ? t.simulatedLabel(label) : label;
+    return game.bonus.type === 'remaining_main' ? t.simulatedLabel(label || t.ballLabels.bonus) : label || t.ballLabels.bonus;
+  }
+
+  const SAVED_LIMIT = 100;
+  const SAVED_KEYS = {
+    history: 'worldLottery.history.v1',
+    favorites: 'worldLottery.favorites.v1'
+  };
+  const saved = { history: [], favorites: [] };
+  const storageWarnings = new Set();
+  const unsavedLists = new Set();
+  let savedView = 'history';
+  let recordSequence = 0;
+
+  function createRecord(game) {
+    const createdAt = Date.now();
+    return {
+      id: window.crypto?.randomUUID?.() || `${createdAt}-${++recordSequence}-${Math.random().toString(36).slice(2)}`,
+      createdAt,
+      countryId: game.countryId,
+      gameId: game.id,
+      ...generateGameLine(game),
+      rules: {
+        displayName: game.displayName,
+        main: { ...game.main },
+        bonus: { ...game.bonus }
+      }
+    };
+  }
+
+  function validTimestamp(value) {
+    return Number.isSafeInteger(value) && value >= 0 && value <= 8640000000000000;
+  }
+
+  function validPool(numbers, pool) {
+    return Array.isArray(numbers) && pool &&
+      Number.isSafeInteger(pool.min) && Number.isSafeInteger(pool.max) &&
+      Number.isSafeInteger(pool.count) && numbers.length === pool.count &&
+      new Set(numbers).size === numbers.length &&
+      numbers.every(number => Number.isSafeInteger(number) && number >= pool.min && number <= pool.max);
+  }
+
+  function validRecord(record, list) {
+    if (!record || typeof record.id !== 'string' || !record.id ||
+        !validTimestamp(record.createdAt) ||
+        (list === 'favorites' && !validTimestamp(record.favoritedAt)) ||
+        typeof record.countryId !== 'string' || typeof record.gameId !== 'string' ||
+        typeof record.rules?.displayName !== 'string' || !validPool(record.main, record.rules.main)) {
+      return false;
+    }
+    const bonus = record.rules.bonus;
+    if (!bonus || !Array.isArray(record.bonus)) return false;
+    if (bonus.type === 'none') return bonus.count === 0 && record.bonus.length === 0;
+    if (typeof bonus.labelKey !== 'string') return false;
+    if (bonus.type === 'independent') return validPool(record.bonus, bonus);
+    return bonus.type === 'remaining_main' &&
+      validPool(record.bonus, { ...record.rules.main, count: bonus.count }) &&
+      record.bonus.every(number => !record.main.includes(number));
+  }
+
+  function readSavedList(list) {
+    if (unsavedLists.has(list)) return;
+    try {
+      const raw = window.localStorage.getItem(SAVED_KEYS[list]);
+      const entries = raw === null ? [] : JSON.parse(raw);
+      if (!Array.isArray(entries)) throw new TypeError('Invalid saved numbers');
+      const ids = new Set();
+      saved[list] = entries.filter(entry => {
+        if (!validRecord(entry, list) || ids.has(entry.id)) return false;
+        ids.add(entry.id);
+        return true;
+      }).sort((a, b) => list === 'history' ? b.createdAt - a.createdAt : b.favoritedAt - a.favoritedAt).slice(0, SAVED_LIMIT);
+      if (saved[list].length === entries.length) storageWarnings.delete(list);
+      else storageWarnings.add(list);
+    } catch {
+      storageWarnings.add(list);
+    }
+  }
+
+  function writeSavedList(list, records) {
+    saved[list] = records;
+    try {
+      window.localStorage.setItem(SAVED_KEYS[list], JSON.stringify(records));
+      unsavedLists.delete(list);
+      storageWarnings.delete(list);
+    } catch {
+      unsavedLists.add(list);
+      storageWarnings.add(list);
+    }
+  }
+
+  function setFavoriteButton(button) {
+    const active = saved.favorites.some(record => record.id === button.dataset.favoriteId);
+    const label = getI18n().saved[active ? 'remove' : 'add'];
+    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    button.firstElementChild.textContent = active ? '★' : '☆';
+  }
+
+  function createFavoriteButton(record) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'saved-button favorite-button';
+    button.dataset.favoriteId = record.id;
+    const icon = document.createElement('span');
+    icon.setAttribute('aria-hidden', 'true');
+    button.append(icon);
+    setFavoriteButton(button);
+    button.addEventListener('click', () => {
+      const t = getI18n().saved;
+      readSavedList('favorites');
+      const favorites = saved.favorites;
+      const active = favorites.some(entry => entry.id === record.id);
+      if (!active && favorites.length >= SAVED_LIMIT) {
+        renderSaved();
+        showToast(t.full);
+        return;
+      }
+      writeSavedList('favorites', active
+        ? favorites.filter(entry => entry.id !== record.id)
+        : [{ ...record, favoritedAt: Date.now() }, ...favorites]);
+      renderSaved();
+      announce(t[active ? 'removed' : 'added']);
+    });
+    return button;
+  }
+
+  function removeHistory(id) {
+    const t = getI18n().saved;
+    readSavedList('history');
+    if (id === undefined && !window.confirm(t.confirmClear)) return;
+    writeSavedList('history', id === undefined ? [] : saved.history.filter(record => record.id !== id));
+    renderSaved();
+    announce(t[id === undefined ? 'cleared' : 'deleted']);
+  }
+
+  function renderSaved() {
+    const t = getI18n();
+    const list = document.getElementById('saved-list');
+    const focused = list.contains(document.activeElement) ? document.activeElement : null;
+    const historyButton = document.getElementById('show-history');
+    const favoritesButton = document.getElementById('show-favorites');
+    const clearButton = document.getElementById('clear-history');
+    const isHistory = savedView === 'history';
+    document.getElementById('saved-heading').textContent = t.saved.heading;
+    historyButton.textContent = t.saved.history;
+    favoritesButton.textContent = t.saved.favorites;
+    historyButton.setAttribute('aria-pressed', String(isHistory));
+    favoritesButton.setAttribute('aria-pressed', String(!isHistory));
+    clearButton.textContent = t.saved.clear;
+    clearButton.hidden = !isHistory;
+    clearButton.disabled = saved.history.length === 0;
+    if (clearButton.disabled && document.activeElement === clearButton) historyButton.focus();
+
+    const warning = document.getElementById('saved-warning');
+    warning.hidden = storageWarnings.size === 0;
+    warning.textContent = warning.hidden ? '' : t.saved.storageWarning;
+    const entries = saved[savedView];
+    const empty = document.getElementById('saved-empty');
+    empty.hidden = entries.length !== 0;
+    empty.textContent = t.saved[isHistory ? 'emptyHistory' : 'emptyFavorites'];
+    const formatter = new Intl.DateTimeFormat(getCurrentCountry().lang, { dateStyle: 'medium', timeStyle: 'short' });
+    list.replaceChildren(...entries.map(record => renderSavedRecord(record, t, formatter, isHistory)));
+
+    resultsContainer.querySelectorAll('[data-favorite-id]').forEach(setFavoriteButton);
+    if (focused) {
+      const replacement = Array.from(list.querySelectorAll('button')).find(button =>
+        (focused.dataset.favoriteId && button.dataset.favoriteId === focused.dataset.favoriteId) ||
+        (focused.dataset.deleteId && button.dataset.deleteId === focused.dataset.deleteId));
+      (replacement || (isHistory ? historyButton : favoritesButton)).focus({ preventScroll: true });
+    }
+  }
+
+  function renderSavedRecord(record, t, formatter, isHistory) {
+    const item = document.createElement('li');
+    item.className = 'saved-record';
+    const heading = document.createElement('strong');
+    const country = COUNTRIES.find(entry => entry.id === record.countryId);
+    heading.textContent = `${country?.name || record.countryId} · ${record.rules.displayName}`;
+    const numbers = document.createElement('p');
+    numbers.textContent = `${t.mainLabel} · ${record.main.join(', ')}`;
+    if (record.bonus.length) {
+      const extra = document.createElement('span');
+      extra.className = 'saved-extra';
+      extra.textContent = `${getExtraLabel(record.rules, t)} · ${record.bonus.join(', ')}`;
+      numbers.append(extra);
+    }
+    const dates = document.createElement('p');
+    dates.className = 'saved-dates';
+    const created = document.createElement('time');
+    created.dateTime = new Date(record.createdAt).toISOString();
+    created.textContent = formatter.format(record.createdAt);
+    dates.append(created);
+    if (!isHistory) {
+      const favorited = document.createElement('time');
+      favorited.dateTime = new Date(record.favoritedAt).toISOString();
+      favorited.textContent = formatter.format(record.favoritedAt);
+      dates.append(` · ${t.saved.favoritedOn} `, favorited);
+    }
+    const controls = document.createElement('div');
+    controls.className = 'saved-actions';
+    controls.append(createFavoriteButton(record));
+    if (isHistory) {
+      const remove = document.createElement('button');
+      remove.className = 'saved-button';
+      remove.type = 'button';
+      remove.dataset.deleteId = record.id;
+      remove.textContent = t.saved.delete;
+      remove.addEventListener('click', () => removeHistory(record.id));
+      controls.append(remove);
+    }
+    item.append(heading, numbers, dates, controls);
+    return item;
   }
 
   // 8. Ball Styling Helpers
@@ -950,7 +1239,10 @@
       });
 
       headerDiv.appendChild(titleSpan);
-      headerDiv.appendChild(copyBtn);
+      const actions = document.createElement('div');
+      actions.className = 'saved-actions';
+      actions.append(createFavoriteButton(set), copyBtn);
+      headerDiv.appendChild(actions);
       row.appendChild(headerDiv);
 
       // Balls container
@@ -1015,15 +1307,20 @@
   }
 
   // 10. Draw Action
-  function handleGenerate() {
+  function handleGenerate(recordHistory) {
     const game = getCurrentGame();
     const count = parseInt(quantitySelect.value, 10) || 5;
 
     const sets = [];
     for (let i = 0; i < count; i++) {
-      sets.push(generateGameLine(game));
+      sets.push(createRecord(game));
     }
 
+    if (recordHistory) {
+      readSavedList('history');
+      writeSavedList('history', [...sets.slice().reverse(), ...saved.history].slice(0, SAVED_LIMIT));
+      renderSaved();
+    }
     renderResults(sets, true);
   }
 
@@ -1134,6 +1431,7 @@
       const selectedCountryId = countrySelect.value;
       updateGamesForCountry(selectedCountryId);
       updateInterfaceLocalization();
+      renderSaved();
       // Clear past results when switching country for consistency
       handleClear();
     });
@@ -1146,13 +1444,29 @@
     quantitySelect.addEventListener('change', () => {
       // If results are present, user might want to re-generate with new quantity
       if (currentResults.length > 0) {
-        handleGenerate();
+        handleGenerate(false);
       }
     });
 
-    btnGenerate.addEventListener('click', handleGenerate);
+    btnGenerate.addEventListener('click', () => handleGenerate(true));
     btnCopyAll.addEventListener('click', copyAllResults);
     btnClear.addEventListener('click', handleClear);
+    document.getElementById('show-history').addEventListener('click', () => {
+      savedView = 'history';
+      renderSaved();
+    });
+    document.getElementById('show-favorites').addEventListener('click', () => {
+      savedView = 'favorites';
+      renderSaved();
+    });
+    document.getElementById('clear-history').addEventListener('click', () => removeHistory());
+    window.addEventListener('storage', event => {
+      const lists = Object.keys(SAVED_KEYS).filter(list => event.key === null || event.key === SAVED_KEYS[list]);
+      if (lists.length) {
+        lists.forEach(readSavedList);
+        renderSaved();
+      }
+    });
   }
 
   // 13. Initialization
@@ -1164,6 +1478,8 @@
     if (countrySelect) countrySelect.value = 'KR';
     updateGamesForCountry('KR');
     updateInterfaceLocalization();
+    Object.keys(SAVED_KEYS).forEach(readSavedList);
+    renderSaved();
     initEvents();
   }
 

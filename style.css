@@ -465,7 +465,8 @@ body {
   border-radius: var(--radius-full);
 }
 
-.btn-copy-line {
+.btn-copy-line,
+.saved-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -480,7 +481,8 @@ body {
   transition: all 0.2s ease;
 }
 
-.btn-copy-line:hover {
+.btn-copy-line:hover,
+.saved-button:hover {
   background-color: var(--surface-hover);
   color: #0f172a;
   border-color: #cbd5e1;
@@ -494,6 +496,71 @@ body {
 
 .btn-copy-line .icon-svg {
   flex-shrink: 0;
+}
+
+.saved-controls,
+.saved-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.saved-controls {
+  justify-content: space-between;
+  margin: 12px 0;
+}
+
+.saved-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.saved-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.saved-record {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+}
+
+.saved-extra {
+  display: block;
+}
+
+.saved-dates,
+.saved-warning {
+  color: #475569;
+  font-size: 0.82rem;
+}
+
+.saved-warning {
+  margin-bottom: 10px;
+}
+
+.favorite-button {
+  min-width: 36px;
+  min-height: 34px;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.favorite-button[aria-pressed="true"],
+.saved-controls [aria-pressed="true"] {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+#saved-numbers [hidden] {
+  display: none;
 }
 
 /* Balls Container */
@@ -894,6 +961,7 @@ body {
   .btn,
   .result-row,
   .btn-copy-line,
+  .saved-button,
   .lotto-ball,
   .toast {
     transition: none;
