@@ -45,55 +45,6 @@
       (game.playerSelectedExtra ? '|' + numberKey(line.bonus) : ''))).size;
   }
 
-  function unrank(pool, count, rank) {
-    const numbers = [];
-    for (let i = 0; count > 0; i++) {
-      const block = choose(pool.length - i - 1, count - 1);
-      if (rank < block) {
-        numbers.push(pool[i]);
-        count--;
-      } else {
-        rank -= block;
-      }
-    }
-    return numbers;
-  }
-
-  function sampleLines(game, count, randomInt) {
-    const mainPool = range(game.main);
-    const extraRule = game.playerSelectedExtra;
-    const extraPool = extraRule ? range(extraRule) : [];
-    const extraCount = extraRule?.count || 0;
-    const extras = choose(extraPool.length, extraCount);
-    const size = Number(choose(mainPool.length, game.main.count) * extras);
-    if (!Number.isSafeInteger(size) ||
-        !Number.isSafeInteger(count) || count < 1 || count > size) throw new RangeError('Invalid batch size');
-    // Partial Fisher–Yates over combination ranks. Store only the cells that move.
-    const swaps = new Map();
-    const lines = [];
-    for (let i = 0; i < count; i++) {
-      const last = size - i - 1;
-      let selected;
-      if (last < 0xFFFFFFFF) {
-        selected = randomInt(0, last);
-      } else {
-        // Use equally likely blocks of 32 bits, discarding the incomplete tail.
-        const blockSize = 0x100000000;
-        const blocks = Math.ceil((last + 1) / blockSize);
-        do {
-          selected = randomInt(0, blocks - 1) * blockSize +
-            randomInt(0, 0xFFFF) * 0x10000 + randomInt(0, 0xFFFF);
-        } while (selected > last);
-      }
-      const rank = BigInt(swaps.get(selected) ?? selected);
-      swaps.set(selected, swaps.get(last) ?? last);
-      swaps.delete(last);
-      const main = unrank(mainPool, game.main.count, rank / extras);
-      lines.push({ main, bonus: unrank(extraPool, extraCount, rank % extras) });
-    }
-    return lines;
-  }
-
   function validNumbers(numbers, pool) {
     return Array.isArray(numbers) && numbers.length === pool.count && new Set(numbers).size === pool.count &&
       numbers.every(n => Number.isInteger(n) && n >= pool.min && n <= pool.max);
@@ -251,7 +202,7 @@
 
   let historyRequest = 0;
   let archive;
-  async function renderHistory(game, lang, mainLabel, ballLabels, gameEntry) {
+  async function renderHistory(game, lang, mainLabel, ballLabels) {
     const request = ++historyRequest;
     const target = document.getElementById('draw-analysis');
     const t = labels[lang];
@@ -260,16 +211,14 @@
     element('p', t.notice, target);
     const content = element('div', '', target);
     try {
-      if (!gameEntry) {
-        archive ||= fetch('data/analysis.json').then(response => {
-          if (!response.ok) throw new Error('Analysis unavailable');
-          return response.json();
-        }).catch(() => {
-          archive = null;
-          return {};
-        });
-      }
-      const entry = gameEntry ? await gameEntry : (await archive)[game.id];
+      archive ||= fetch('data/analysis.json').then(response => {
+        if (!response.ok) throw new Error('Analysis unavailable');
+        return response.json();
+      }).catch(() => {
+        archive = null;
+        return {};
+      });
+      const entry = (await archive)[game.id];
       if (request !== historyRequest) return;
       if (!entry?.current) element('p', t.pending, content);
       if (entry?.source) {
@@ -299,7 +248,7 @@
     }
   }
 
-  const api = { choose, jackpotOdds, uniqueTickets, sampleLines, summarize, rankings, renderOdds, renderHistory };
+  const api = { choose, jackpotOdds, uniqueTickets, summarize, rankings, renderOdds, renderHistory };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else window.lotteryAnalysis = api;
 })();

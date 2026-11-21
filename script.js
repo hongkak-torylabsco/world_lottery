@@ -392,6 +392,9 @@
       footerIndependence: 'World Lottery is an independent service with no affiliation to official lottery operators.',
       footerResponsible: 'Generating numbers does not improve your odds. Follow local age limits and set a spending limit.',
       resultsGenerated: count => `Lottery sets generated: ${count}.`,
+      generating: 'Generating…',
+      generationFailed: 'Could not generate numbers. Try again.',
+      rateLimited: 'Too many requests. Wait a moment and try again.',
       resultsCleared: 'Results cleared.',
       toastCopyFailed: 'Unable to copy the numbers to the clipboard.',
       quantityLabel: 'Quantity',
@@ -455,6 +458,9 @@
       footerIndependence: 'World Lottery는 공식 복권 운영사와 관계없는 독립 서비스입니다.',
       footerResponsible: '번호 생성은 당첨 확률을 높이지 않습니다. 지역의 연령 제한을 지키고, 지출 한도를 정해 이용하세요.',
       resultsGenerated: count => `번호를 ${count}게임 생성했습니다.`,
+      generating: '번호 생성 중…',
+      generationFailed: '번호를 생성하지 못했습니다. 다시 시도해 주세요.',
+      rateLimited: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.',
       resultsCleared: '결과를 초기화했습니다.',
       toastCopyFailed: '번호를 클립보드에 복사하지 못했습니다.',
       quantityLabel: '생성 수량',
@@ -518,6 +524,9 @@
       footerIndependence: 'World Lotteryは、公式の宝くじ運営元と関係のない独立したサービスです。',
       footerResponsible: '数字を生成しても当せん確率は上がりません。地域の年齢制限を守り、購入予算を決めてください。',
       resultsGenerated: count => `${count}口分の数字を生成しました。`,
+      generating: '生成中…',
+      generationFailed: '数字を生成できませんでした。もう一度お試しください。',
+      rateLimited: 'リクエストが多すぎます。しばらくしてからお試しください。',
       resultsCleared: '生成結果をクリアしました。',
       toastCopyFailed: '数字をクリップボードにコピーできませんでした。',
       quantityLabel: '購入口数',
@@ -581,6 +590,9 @@
       footerIndependence: 'O World Lottery é um serviço independente, sem vínculo com as operadoras oficiais de loteria.',
       footerResponsible: 'Gerar números não aumenta a chance de ganhar. Respeite a idade mínima local e defina um limite de gastos.',
       resultsGenerated: count => `Jogos gerados: ${count}.`,
+      generating: 'Gerando…',
+      generationFailed: 'Não foi possível gerar os números. Tente novamente.',
+      rateLimited: 'Muitas solicitações. Aguarde um momento e tente novamente.',
       resultsCleared: 'Resultados limpos.',
       toastCopyFailed: 'Não foi possível copiar os números para a área de transferência.',
       quantityLabel: 'Quantidade de Jogos',
@@ -620,71 +632,8 @@
     }
   };
 
-  // 4. Secure Random Number Utilities
-  // Cryptographically uniform integer in range [min, max]
-  function getRandomInt(min, max) {
-    if (min === max) return min;
-    const range = max - min + 1;
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
-      // Rejection sampling to avoid modulo bias
-      const maxUint = 0xFFFFFFFF;
-      const limit = maxUint - (maxUint % range);
-      const buffer = new Uint32Array(1);
-      let randVal;
-      do {
-        window.crypto.getRandomValues(buffer);
-        randVal = buffer[0];
-      } while (randVal >= limit);
-      return min + (randVal % range);
-    }
-    return Math.floor(Math.random() * range) + min;
-  }
-
-  // Draw distinct numbers without replacement
-  function drawDistinctFromPool(pool, count) {
-    const poolCopy = pool.slice();
-    const drawn = [];
-    for (let i = 0; i < count; i++) {
-      if (poolCopy.length === 0) break;
-      const index = getRandomInt(0, poolCopy.length - 1);
-      drawn.push(poolCopy[index]);
-      poolCopy.splice(index, 1);
-    }
-    return {
-      drawn: drawn.sort((a, b) => a - b),
-      remaining: poolCopy
-    };
-  }
-
-  function createRange(min, max) {
-    const list = [];
-    for (let i = min; i <= max; i++) {
-      list.push(i);
-    }
-    return list;
-  }
-
-  // Draw single game line according to exact game specifications
-  function generateGameLine(game) {
-    // 1. Draw main numbers from 1..main.max without replacement
-    const mainPool = createRange(game.main.min, game.main.max);
-    const mainDraw = drawDistinctFromPool(mainPool, game.main.count);
-    const mainNumbers = mainDraw.drawn;
-
-    const extra = game.playerSelectedExtra;
-    return {
-      main: mainNumbers,
-      bonus: extra ? drawDistinctFromPool(createRange(extra.min, extra.max), extra.count).drawn : []
-    };
-  }
-
   const lottery = typeof module !== "undefined" && module.exports
     ? require("./lottery.js") : window.lotteryAnalysis;
-
-  function generateBatch(game, count) {
-    if (count === 1) return [generateGameLine(game)];
-    return lottery.sampleLines(game, count, getRandomInt);
-  }
 
   // 5. DOM Elements Cache
   let countrySelect = null;
@@ -724,6 +673,9 @@
   }
 
   let currentResults = [];
+  let activeGeneration = null;
+  const generationPath = '/api/v1/generate';
+  const koreaGameId = 'kr-lotto-645';
   let toastTimeout = null;
 
   // 6. Helpers
@@ -801,7 +753,7 @@
     // NOTE: Title, intro, Country label, Lottery Name label are KEPT IN ENGLISH (Requirement 3)
     if (quantityLabel) quantityLabel.textContent = t.quantityLabel;
     document.getElementById('config-title').textContent = t.configTitle;
-    btnGenerate.querySelector('span').textContent = t.btnGenerate;
+    btnGenerate.querySelector('span').textContent = activeGeneration ? t.generating : t.btnGenerate;
     btnCopyAll.querySelector('span').textContent = t.btnCopyAll;
     btnClear.querySelector('span').textContent = t.btnClear;
     if (resultsHeading) resultsHeading.textContent = t.resultsHeading;
@@ -831,7 +783,8 @@
     });
 
     updateRules(game, country.lang, t);
-    lottery.renderHistory(game, country.lang, t.mainLabel, t.ballLabels, updateKoreaMode(game, country.lang));
+    updateKoreaMode(game, country.lang);
+    lottery.renderHistory(game, country.lang, t.mainLabel, t.ballLabels);
 
     // Update empty state text if empty
     if (emptyState && currentResults.length === 0) {
@@ -1264,74 +1217,29 @@
 
   const koreaModeLabels = {
     ko: {
-      title: '생성 방식', random: '일반 무작위 생성', filtered: '과거 당첨번호 유사 조합 제외',
-      info: '',
-      loading: '공식 당첨 데이터를 확인하는 중입니다.',
-      unavailable: '공식 당첨 데이터가 없거나 검증에 실패해 필터를 사용할 수 없습니다.',
-      failed: '시도 한도 안에 조건을 만족하는 조합을 만들지 못했습니다. 다시 시도해 주세요.',
-      cutoff: '분석 기준일', draws: '분석 회차 수', updated: '데이터 갱신일'
+      title: '생성 방식', random: '일반 무작위 생성', filtered: '과거 당첨번호 유사 조합 제외'
     },
     en: {
-      title: 'Generation mode', random: 'Uniform random', filtered: 'Exclude combinations similar to past draws',
-      info: '',
-      loading: 'Checking official draw data.',
-      unavailable: 'The filter is unavailable because official draw data is missing or could not be validated.',
-      failed: 'The attempt limit was reached before a valid batch could be generated. Try again.',
-      cutoff: 'Analysis cutoff', draws: 'Draws analyzed', updated: 'Data updated'
+      title: 'Generation mode', random: 'Uniform random', filtered: 'Exclude combinations similar to past draws'
     },
     ja: {
-      title: '生成方式', random: '一様なランダム生成', filtered: '過去の当せん数字に近い組み合わせを除外',
-      info: '',
-      loading: '公式の抽せんデータを確認しています。',
-      unavailable: '公式データがないか、検証できないため、フィルターを利用できません。',
-      failed: '試行回数の上限までに条件を満たす組み合わせを生成できませんでした。もう一度お試しください。',
-      cutoff: '分析基準日', draws: '分析した抽せん回数', updated: 'データ更新日'
+      title: '生成方式', random: '一様なランダム生成', filtered: '過去の当せん数字に近い組み合わせを除外'
     },
     'pt-BR': {
-      title: 'Modo de geração', random: 'Geração aleatória uniforme', filtered: 'Excluir combinações semelhantes a sorteios anteriores',
-      info: '',
-      loading: 'Verificando os dados oficiais dos sorteios.',
-      unavailable: 'O filtro está indisponível porque os dados oficiais estão ausentes ou não puderam ser validados.',
-      failed: 'O limite de tentativas foi atingido antes de gerar combinações válidas. Tente novamente.',
-      cutoff: 'Data de corte da análise', draws: 'Sorteios analisados', updated: 'Atualização dos dados'
+      title: 'Modo de geração', random: 'Geração aleatória uniforme', filtered: 'Excluir combinações semelhantes a sorteios anteriores'
     }
   };
-  let koreaPending;
-  let koreaData;
 
   function updateKoreaMode(game, lang) {
     const panel = document.getElementById('korea-mode-panel');
-    panel.hidden = game.id !== window.koreaLotto.gameId;
+    panel.hidden = game.id !== koreaGameId;
     if (panel.hidden) return;
 
-    const t = koreaModeLabels[lang];
-    const select = document.getElementById('korea-mode');
-    const info = document.getElementById('korea-mode-info');
-    const status = document.getElementById('korea-mode-status');
-    document.getElementById('korea-mode-label').textContent = t.title;
-    for (const option of select.options) option.textContent = t[option.value];
-    info.textContent = t.info;
-    status.textContent = t.loading;
-    koreaPending ||= fetch('data/kr-lotto645.json').then(response => {
-      if (!response.ok) throw new Error('Korea Lotto history unavailable');
-      return response.json();
-    }).then(snapshot => {
-      koreaData = window.koreaLotto.prepareSnapshot(snapshot);
-      return koreaData;
-    }).catch(() => null);
-
-    return koreaPending.then(data => {
-      if (getCurrentGame().id === game.id && getCurrentCountry().lang === lang) {
-        select.options[1].disabled = !data;
-        const format = new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' });
-        status.textContent = data
-          ? t.cutoff + ' ' + format.format(new Date(data.entry.through)) +
-            ' · ' + t.draws + ' ' + data.entry.current.count +
-            ' · ' + t.updated + ' ' + format.format(new Date(data.entry.updated))
-          : t.unavailable;
-      }
-      return data?.entry || { source: window.koreaLotto.source };
-    });
+    const labels = koreaModeLabels[lang];
+    document.getElementById('korea-mode-label').textContent = labels.title;
+    for (const option of document.getElementById('korea-mode').options) {
+      option.textContent = labels[option.value];
+    }
   }
 
   // 10. Draw Action
@@ -1340,39 +1248,81 @@
     lottery.renderOdds(getCurrentGame(), getCurrentCountry().lang, count, currentResults);
   }
 
-  function handleGenerate(recordHistory) {
+  function setGenerationBusy(busy) {
+    btnGenerate.disabled = busy;
+    btnGenerate.setAttribute('aria-busy', String(busy));
+    btnGenerate.querySelector('span').textContent = busy ? getI18n().generating : getI18n().btnGenerate;
+  }
+
+  function cancelGeneration() {
+    if (!activeGeneration) return;
+    activeGeneration.abort();
+    activeGeneration = null;
+    setGenerationBusy(false);
+  }
+
+  function validateTickets(payload, game, count) {
+    if (payload?.success !== true || payload.gameId !== game.id ||
+        typeof payload.generatedAt !== 'string' || !Number.isFinite(Date.parse(payload.generatedAt)) ||
+        !Array.isArray(payload.tickets) || payload.tickets.length !== count) return null;
+    const extraRule = game.playerSelectedExtra || { min: 1, max: 1, count: 0 };
+    const sorted = (values, pool) => validPool(values, pool) &&
+      values.every((n, index) => index === 0 || n > values[index - 1]);
+    if (!payload.tickets.every(ticket => sorted(ticket?.main, game.main) && sorted(ticket.extra, extraRule))) return null;
+    const lines = payload.tickets.map(({ main, extra }) => ({ main, bonus: extra }));
+    return lottery.uniqueTickets(game, lines) === count ? lines : null;
+  }
+
+  async function handleGenerate(recordHistory) {
+    if (activeGeneration) return;
     const game = getCurrentGame();
-    const count = parseInt(quantitySelect.value, 10) || 5;
-
-    let lines;
-    if (game.id === window.koreaLotto.gameId && document.getElementById('korea-mode').value === 'filtered') {
-      const t = koreaModeLabels[getCurrentCountry().lang];
-      try {
-        if (!koreaData) {
-          announce(t.unavailable);
-          showToast(t.unavailable);
-          return;
-        }
-        lines = koreaData.generate(count, getRandomInt);
-      } catch {
-        announce(t.failed);
-        showToast(t.failed);
-        return;
+    const count = Number(quantitySelect.value);
+    const historical = game.id === koreaGameId && document.getElementById('korea-mode').value === 'filtered';
+    const mode = historical ? 'historical-filter' : 'random';
+    const controller = new AbortController();
+    activeGeneration = controller;
+    setGenerationBusy(true);
+    announce(getI18n().generating);
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    let failure;
+    try {
+      const response = await fetch(generationPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        signal: controller.signal,
+        body: JSON.stringify({ gameId: game.id, ticketCount: count, mode })
+      });
+      if (!response.ok) {
+        if (response.status === 429) failure = getI18n().rateLimited;
+        throw new Error('Generation API failed');
       }
-    } else {
-      lines = generateBatch(game, count);
+      const lines = validateTickets(await response.json(), game, count);
+      if (activeGeneration !== controller) return;
+      if (!lines) throw new Error('Invalid tickets');
+      const sets = lines.map(line => createRecord(game, line));
+      if (recordHistory) {
+        readSavedList('history');
+        writeSavedList('history', [...sets.slice().reverse(), ...saved.history].slice(0, SAVED_LIMIT));
+        renderSaved();
+      }
+      renderResults(sets, true);
+    } catch {
+      if (activeGeneration !== controller) return;
+      const message = failure || getI18n().generationFailed;
+      announce(message);
+      showToast(message);
+    } finally {
+      clearTimeout(timeout);
+      if (activeGeneration === controller) {
+        activeGeneration = null;
+        setGenerationBusy(false);
+      }
     }
-    const sets = lines.map(line => createRecord(game, line));
-
-    if (recordHistory) {
-      readSavedList('history');
-      writeSavedList('history', [...sets.slice().reverse(), ...saved.history].slice(0, SAVED_LIMIT));
-      renderSaved();
-    }
-    renderResults(sets, true);
   }
 
   function handleClear() {
+    cancelGeneration();
     currentResults = [];
     renderResults([], false);
     announce(getI18n().resultsCleared);
@@ -1684,6 +1634,7 @@
     });
 
     quantitySelect.addEventListener('change', () => {
+      cancelGeneration();
       // If results are present, user might want to re-generate with new quantity
       if (currentResults.length > 0) {
         handleGenerate(false);
@@ -1743,11 +1694,8 @@
       COUNTRIES,
       GAMES,
       TRANSLATIONS,
-      getRandomInt,
-      drawDistinctFromPool,
-      generateGameLine,
-      generateBatch,
       validRecord,
+      validateTickets,
       formatLineString
     };
   }

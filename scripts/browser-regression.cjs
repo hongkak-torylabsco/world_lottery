@@ -1,13 +1,10 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { once } = require('node:events');
-const { mkdtemp, readFile, rm } = require('node:fs/promises');
-const { createServer } = require('node:http');
+const { mkdtemp, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
-const { join, extname } = require('node:path');
+const { join } = require('node:path');
 
-const root = join(__dirname, '..');
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
 
 function devTools(browser) {
   const pending = new Map();
@@ -50,6 +47,18 @@ async function check(browser, url) {
     return result.value;
   };
   await send('Page.enable');
+  await send('Page.addScriptToEvaluateOnNewDocument', {
+    source: String.raw`
+      window.generateAndWait = async () => {
+        const button = document.getElementById('btn-generate');
+        button.click();
+        for (let attempt = 0; button.disabled && attempt < 240; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        if (button.disabled) throw new Error('Generation request did not settle');
+      };
+    `
+  });
   const legacy = {
     id: 'legacy', createdAt: 1710000000000, countryId: 'US', gameId: 'us-megamillions',
     main: [1, 7, 8, 9, 10], bonus: [25],
@@ -164,7 +173,7 @@ async function check(browser, url) {
     Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
     let clipboard;
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { clipboard = text; } } });
-    document.querySelector('#btn-generate').click();
+    await generateAndWait();
     const resultRows = document.querySelectorAll('.result-row');
     const button = (row, name) => [...row.querySelectorAll('button')].find(item => item.textContent.trim() === name);
     const row = resultRows[0];
@@ -242,7 +251,7 @@ async function check(browser, url) {
   console.log('Legacy storage, favorites, batch, odds, rule eras, PNG and share callbacks OK');
 
   await send('Emulation.setDeviceMetricsOverride', { width: 320, height: 900, deviceScaleFactor: 1, mobile: false });
-  const generated = await evalPage(() => {
+  const generated = await evalPage(async () => {
     const country = document.getElementById('country-select');
     const game = document.getElementById('game-select');
     const quantity = document.getElementById('quantity-select');
@@ -256,7 +265,7 @@ async function check(browser, url) {
       select(country, option.value);
       for (const choice of game.options) {
         select(game, choice.value);
-        document.getElementById('btn-generate').click();
+        await generateAndWait();
         const row = document.querySelector('.result-row');
         const main = row.querySelectorAll('.main-balls .lotto-ball').length;
         const extra = row.querySelectorAll('.bonus-balls .lotto-ball').length;
@@ -290,84 +299,75 @@ async function check(browser, url) {
     change('country-select', 'KR');
     const mode = document.getElementById('korea-mode');
     const defaultMode = mode.value;
-    const official = await fetch('data/kr-lotto645.json').then(response => response.json());
-    for (let i = 0; mode.options[1].disabled && i < 40; i++) {
-      await new Promise(resolve => setTimeout(resolve, 25));
-    }
+    const notes = panel.querySelectorAll('p').length;
+    change('quantity-select', '1');
+    await generateAndWait();
+    const randomNumbers = document.querySelectorAll('.result-row .lotto-ball').length;
     change('korea-mode', 'filtered');
     const counts = [];
     for (const count of [1, 3, 5, 10]) {
+      document.getElementById('btn-clear').click();
       change('quantity-select', String(count));
-      document.getElementById('btn-generate').click();
+      await generateAndWait();
       const saved = JSON.parse(localStorage.getItem('worldLottery.history.v1')).slice(0, count);
       const lines = saved.map(row => row.main);
       if (saved.some(row => row.gameId !== 'kr-lotto-645') ||
           saved.some(row => row.main.length !== 6 || row.bonus.length !== 0) ||
-          lines.some(main => official.draws.some(draw => draw.main.filter(n => main.includes(n)).length > 4)) ||
           new Set(lines.map(main => main.join(','))).size !== count) {
         throw new Error('Filtered Korea Lotto batch failed');
       }
       counts.push(document.querySelectorAll('.result-row').length);
     }
-    return { hiddenOutsideKorea, defaultMode, enabled: !mode.options[1].disabled, counts,
-      metadata: document.getElementById('korea-mode-status').innerText,
+    return { hiddenOutsideKorea, defaultMode, enabled: !mode.options[1].disabled, counts, notes, randomNumbers,
       results: document.getElementById('draw-analysis').innerText };
   });
   assert.ok(korean.hiddenOutsideKorea && korean.enabled);
   assert.equal(korean.defaultMode, 'random');
   assert.deepEqual(korean.counts, [1, 3, 5, 10]);
-  assert.match(korean.metadata, /분석 기준일.*분석 회차 수 260.*데이터 갱신일/);
+  assert.equal(korean.notes, 0);
+  assert.equal(korean.randomNumbers, 6);
   assert.match(korean.results, /COLD.*43 \(22\)/);
-  console.log('Korea Lotto filter, metadata and default mode OK');
+  console.log('Korea Lotto modes and statistics work without a visible explanation or extra space');
 
-  for (const response of ["new Response(null, {status:404})", "new Response('{}')"]) {
-    const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', {
-      source: `(() => {
-        const original = window.fetch;
-        window.fetch = (url, ...args) => url === 'data/kr-lotto645.json'
-          ? Promise.resolve(${response}) : original(url, ...args);
-      })()`
-    });
-    await send('Page.reload');
-    const unavailable = "document.querySelector('#korea-mode-status')?.textContent.includes('필터를 사용할 수 없습니다.')";
-    for (let i = 0; !(await evalPage(unavailable)) && i < 40; i++) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    assert.ok(await evalPage(unavailable));
-    const state = await evalPage(() => {
-      const mode = document.getElementById('korea-mode');
-      const disabled = mode.options[1].disabled;
-      const generate = document.getElementById('btn-generate');
-      mode.options[1].disabled = false;
-      mode.value = 'filtered';
-      generate.click();
-      const filtered = document.querySelectorAll('.result-row').length;
-      mode.value = 'random';
-      generate.click();
-      return { disabled, filtered, random: document.querySelectorAll('.result-row').length };
-    });
-    assert.deepEqual(state, { disabled: true, filtered: 0, random: 5 });
-    await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
-  }
-  console.log('Missing and invalid Korea data disable the filter without fallback');
+  const failure = await evalPage(async () => {
+    const originalFetch = window.fetch;
+    let resolveRequest;
+    let calls = 0;
+    window.fetch = (url, options) => {
+      if (url !== '/api/v1/generate') return originalFetch(url, options);
+      calls++;
+      return new Promise(resolve => { resolveRequest = resolve; });
+    };
+    const generate = document.querySelector('#btn-generate');
+    document.getElementById('btn-clear').click();
+    generate.click();
+    const busy = generate.disabled && generate.getAttribute('aria-busy') === 'true' &&
+      generate.textContent.includes('번호 생성 중');
+    generate.click();
+    resolveRequest(new Response(null, { status: 500 }));
+    while (generate.disabled) await new Promise(resolve => setTimeout(resolve, 10));
+    const error = document.getElementById('toast').textContent;
+    generate.click();
+    const staleResponse = resolveRequest;
+    const country = document.getElementById('country-select');
+    country.value = 'US';
+    country.dispatchEvent(new Event('change'));
+    staleResponse(new Response(null, { status: 500 }));
+    await new Promise(resolve => setTimeout(resolve, 30));
+    window.fetch = originalFetch;
+    return { busy, calls, error, rows: document.querySelectorAll('.result-row').length, recovered: !generate.disabled };
+  });
+  assert.deepEqual(failure, { busy: true, calls: 2, error: '번호를 생성하지 못했습니다. 다시 시도해 주세요.',
+    rows: 0, recovered: true });
+  console.log('API loading, duplicate-click prevention, localized errors and stale requests OK');
+
 }
 
 async function main() {
   const executable = process.argv[2];
+  const url = process.argv[3] || 'http://127.0.0.1:8788/';
   if (!executable) throw new Error('Pass the path to a Chromium executable');
   const profile = await mkdtemp(join(tmpdir(), 'lottery-chrome-'));
-  const server = createServer(async (req, res) => {
-    const path = req.url === '/' ? '/index.html' : req.url;
-    const type = types[extname(path)];
-    if (!type || !/^\/(data\/)?[\w.-]+$/.test(path)) return res.writeHead(404).end();
-    try {
-      res.writeHead(200, { 'Content-Type': type }).end(await readFile(join(root, path)));
-    } catch {
-      res.end();
-    }
-  });
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
   const browser = spawn(executable, ['--headless', '--remote-debugging-pipe', '--no-first-run',
     '--disable-background-networking', '--no-proxy-server',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1', '--user-data-dir=' + profile],
@@ -375,12 +375,11 @@ async function main() {
   const ended = once(browser, 'exit');
   const timeout = setTimeout(() => browser.kill(), 30000);
   try {
-    await check(browser, 'http://127.0.0.1:' + server.address().port);
+    await check(browser, url);
   } finally {
     clearTimeout(timeout);
     browser.kill();
     await ended;
-    server.close();
     await rm(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   }
 }

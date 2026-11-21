@@ -3,7 +3,6 @@ const { mkdirSync, readFileSync, writeFileSync, renameSync } = require('node:fs'
 const { join } = require('node:path');
 const { GAMES } = require('../script.js');
 const { summarize } = require('../lottery.js');
-const korea = require('../korea-lotto.js');
 
 const dir = join(__dirname, '..', 'data');
 const sources = {
@@ -87,14 +86,14 @@ function writeJson(name, value) {
 function run(mode, cutoff) {
   if (!['--download', '--verify', '--rebuild'].includes(mode)) throw new Error('Use --download YYYY-MM-DD, --verify, or --rebuild');
   if (mode === '--download') checkDate(cutoff);
+  const published = JSON.parse(readFileSync(join(dir, 'analysis.json'), 'utf8'));
   const analysis = {};
   const snapshots = {};
   for (const game of GAMES) {
     const [name, url, dataset, weekdays] = sources[game.id];
     const source = { name, url };
-    if (game.id === korea.gameId) {
-      const snapshot = JSON.parse(readFileSync(join(dir, 'kr-lotto645.json'), 'utf8'));
-      analysis[game.id] = korea.prepareSnapshot(snapshot).entry;
+    if (game.id === 'kr-lotto-645') {
+      analysis[game.id] = published[game.id];
       continue;
     }
     if (!dataset) {
@@ -108,7 +107,7 @@ function run(mode, cutoff) {
     if (mode === '--download') snapshots[game.id] = snapshot;
   }
   if (mode === '--verify') {
-    if (JSON.stringify(analysis) !== JSON.stringify(JSON.parse(readFileSync(join(dir, 'analysis.json'), 'utf8')))) {
+    if (JSON.stringify(analysis) !== JSON.stringify(published)) {
       throw new Error('Published analysis does not match the snapshots');
     }
   } else {

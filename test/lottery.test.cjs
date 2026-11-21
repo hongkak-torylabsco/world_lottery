@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { GAMES, generateGameLine, generateBatch, validRecord } = require('../script.js');
-const { choose, sampleLines, uniqueTickets, jackpotOdds, rankings, summarize } = require('../lottery.js');
+const { GAMES, validRecord, validateTickets } = require('../script.js');
+const { choose, uniqueTickets, jackpotOdds, rankings, summarize } = require('../lottery.js');
 const { buildEntry, fiveYearsBefore } = require('../scripts/update-draws.cjs');
 
 const expected = {
@@ -21,20 +21,13 @@ const expected = {
   'za-powerball': [50, 5, 16, 1, 33900160n]
 };
 
-test('all 14 games preserve number ranges, match rules and batch uniqueness', () => {
+test('all 14 games preserve public purchase rules and odds', () => {
   assert.equal(GAMES.length, Object.keys(expected).length);
   for (const game of GAMES) {
     const [mainMax, mainCount, extraMax, extraCount, space] = expected[game.id];
+    assert.deepEqual([game.main.max, game.main.count, game.playerSelectedExtra?.max || 0,
+      game.playerSelectedExtra?.count || 0], [mainMax, mainCount, extraMax, extraCount]);
     for (const count of [1, 3, 5, 10]) {
-      const lines = generateBatch(game, count);
-      assert.equal(new Set(lines.map(line => JSON.stringify(line))).size, count);
-      for (const line of [...lines, generateGameLine(game)]) {
-        for (const [values, max, length] of [[line.main, mainMax, mainCount], [line.bonus, extraMax, extraCount]]) {
-          assert.equal(values.length, length, game.id);
-          assert.deepEqual(values, [...new Set(values)].sort((a, b) => a - b));
-          assert.ok(values.every(n => Number.isInteger(n) && n >= 1 && n <= max));
-        }
-      }
       const n = BigInt(count);
       assert.deepEqual(jackpotOdds(game, count), game.id === 'uk-lotto'
         ? { numerator: space ** 2n - (space - n) ** 2n, denominator: space ** 2n }
@@ -44,11 +37,8 @@ test('all 14 games preserve number ranges, match rules and batch uniqueness', ()
   assert.equal(choose(100, 50), 100891344545564193334812497256n);
 });
 
-test('sampling exhausts a small pool even with repeated random indexes', () => {
+test('odds count unique ticket combinations', () => {
   const game = { main: { min: 1, max: 3, count: 2 }, drawBonus: { count: 1 } };
-  assert.equal(new Set(sampleLines(game, 3, () => 0).map(line => JSON.stringify(line))).size, 3);
-  assert.deepEqual(sampleLines(game, 3, () => 0).map(line => line.bonus), [[], [], []]);
-  for (const count of [0, 4, 1.5]) assert.throws(() => sampleLines(game, count, () => 0), RangeError);
   assert.throws(() => jackpotOdds(game, 4), RangeError);
   const variants = [{ main: [2, 1], bonus: [2] }, { main: [1, 2], bonus: [3] }];
   assert.equal(uniqueTickets(game, variants), 1);
@@ -93,4 +83,19 @@ test('legacy records use their own rule snapshot and unchanged data fields', () 
   assert.ok(validRecord(record, 'history'));
   assert.ok(validRecord({ ...record, favoritedAt: record.createdAt }, 'favorites'));
   assert.equal(validRecord(record, 'favorites'), false);
+});
+
+test('API tickets must match the public rules, order and requested batch', () => {
+  const game = GAMES.find(entry => entry.id === 'us-powerball');
+  const ticket = { main: [1, 2, 3, 4, 5], extra: [26] };
+  const payload = { success: true, gameId: game.id, generatedAt: '2026-11-21T00:00:00Z', tickets: [ticket] };
+  assert.deepEqual(validateTickets(payload, game, 1), [{ main: ticket.main, bonus: ticket.extra }]);
+  for (const invalid of [
+    { ...payload, gameId: 'kr-lotto-645' },
+    { ...payload, generatedAt: 'unknown' },
+    { ...payload, tickets: [{ ...ticket, extra: [27] }] },
+    { ...payload, tickets: [{ ...ticket, main: [1, 2, 4, 3, 5] }] },
+    { ...payload, tickets: [null] }
+  ]) assert.equal(validateTickets(invalid, game, 1), null);
+  assert.equal(validateTickets({ ...payload, tickets: [ticket, ticket, ticket] }, game, 3), null);
 });

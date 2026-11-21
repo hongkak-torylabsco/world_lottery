@@ -1070,10 +1070,3 @@ body {
 .korea-mode .form-select {
   text-overflow: ellipsis;
 }
-
-.korea-mode p {
-  color: inherit;
-  font-size: 0.875rem;
-  margin: 0.25rem 0 0;
-  overflow-wrap: anywhere;
-}

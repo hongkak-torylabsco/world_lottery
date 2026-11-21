@@ -8,7 +8,7 @@ node scripts/update-draws.cjs --verify
 node scripts/browser-regression.cjs "C:/Program Files/Google/Chrome/Application/chrome.exe"
 ```
 
-브라우저 테스트는 Chrome과 임시 로컬 HTTP 서버를 사용합니다. 사이트를 직접 열 때도 HTTP로 제공해야 당첨 데이터 JSON을 읽을 수 있습니다. Cloudflare Pages는 `data/`를 포함한 정적 파일을 그대로 제공합니다.
+v1.5.0 브라우저 테스트에는 로컬 Wrangler Pages와 번호 생성 Worker가 필요합니다. 실행 방법과 배포 절차는 [v1.5.0 이전 문서](MIGRATION-v1.5.0.md)를 참고하세요.
 
 ## 공식 당첨 데이터
 
@@ -46,12 +46,9 @@ GitHub Actions에서는 수동 실행 또는 cron으로 다운로드와 오프�
 
 UK Lotto는 두 라운드 중 최소 한 번 맞힐 확률로 계산합니다. 캐나다 Lotto 6/49는 Classic Draw의 6/6을 계산하며, 별도 Gold Ball Draw는 발행 번호 수에 따라 달라집니다. 남아공 PowerBall은 [Capitec 판매 약관](https://www.capitecbank.co.za/globalassets/pages/home/personal/lotto/lotto-terms-and-conditions-.pdf)의 5/50 + 1/16에 근거한 계산값입니다.
 
-## v1.4.1 한국 로또 6/45
+## 한국 로또 6/45 데이터
 
-```sh
-node scripts/update-draws.cjs --verify
-node --test
-```
+한국 공식 이력 가져오기는 별도 Worker 프로젝트에서 실행합니다. 데이터 갱신 절차는 [v1.5.0 이전 문서](MIGRATION-v1.5.0.md)를 참고하세요.
 
 가져오기 스크립트는 전체 CSV의 숫자, 날짜, 회차 연속성을 검사합니다. 한국 날짜로 계산한 5년 창에서 회차, 추첨일, 본번호, 보너스만 JSON에 저장합니다. 토요일 21시 전에는 직전 날짜까지의 데이터를 분석합니다. 원본 CSV와 상금·판매액 필드는 저장소 데이터에 포함되지 않습니다. 2026-11-21 갱신본의 조회 마감일은 2026-11-20이며, 실제 분석 범위는 991~1250회(2021-11-27~2026-11-14)입니다. 동행복권 사이트 약관(2025-07-29 시행)의 지식재산권 관련 조항을 확인했으며, 당첨번호 CSV에 적용되는 별도 공개 재배포 라이선스는 확인되지 않았습니다. [동행복권 사이트 이용약관](https://m.dhlottery.co.kr/trms/home)
 
