@@ -1244,14 +1244,14 @@
   }
 
   function restoreKoreaMode() {
+    const options = document.querySelectorAll('input[name="korea-mode"]');
+    let saved;
     try {
-      const saved = window.localStorage.getItem(koreaModeKey);
-      if (saved === 'random' || saved === 'filtered') {
-        document.querySelector(`input[name="korea-mode"][value="${saved}"]`).checked = true;
-      }
+      saved = window.localStorage.getItem(koreaModeKey);
     } catch {
-      // The checked default also works when browser storage is unavailable.
+      // Use the default when browser storage is unavailable.
     }
+    for (const option of options) option.checked = option.value === saved;
   }
 
   // 10. Draw Action
@@ -1289,9 +1289,11 @@
     if (activeGeneration) return;
     const game = getCurrentGame();
     const count = Number(quantitySelect.value);
-    const historical = game.id === koreaGameId &&
-      document.querySelector('input[name="korea-mode"]:checked')?.value === 'filtered';
-    const mode = historical ? 'historical-filter' : 'random';
+    let mode = 'random';
+    if (game.id === koreaGameId) {
+      const selected = document.querySelector('input[name="korea-mode"]:checked')?.value;
+      mode = { filtered: 'historical-filter', random: 'random' }[selected] || 'kr-statistical';
+    }
     const controller = new AbortController();
     activeGeneration = controller;
     setGenerationBusy(true);

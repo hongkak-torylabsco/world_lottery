@@ -282,7 +282,7 @@ async function check(browser, url) {
         }
         const request = generationRequests.at(-1);
         if (request.gameId !== choice.value ||
-            request.mode !== (choice.value === 'kr-lotto-645' ? 'historical-filter' : 'random')) {
+            request.mode !== (choice.value === 'kr-lotto-645' ? 'kr-statistical' : 'random')) {
           throw new Error('Invalid generation request for ' + choice.value);
         }
         counts[choice.value] = [main, extra];
@@ -309,8 +309,12 @@ async function check(browser, url) {
     const hiddenOutsideKorea = panel.hidden;
     change('country-select', 'KR');
     const mode = value => panel.querySelector('input[value="' + value + '"]');
-    const defaultMode = panel.querySelector('input:checked').value;
-    const notes = panel.querySelectorAll('p').length;
+    const defaultMode = panel.querySelector('input:checked')?.value ?? null;
+    const overrides = panel.querySelectorAll('input[type=radio]').length;
+    change('quantity-select', '1');
+    await generateAndWait();
+    const defaultRequest = generationRequests.at(-1).mode;
+    const defaultNumbers = [...document.querySelectorAll('.result-row .lotto-ball')].map(ball => Number(ball.textContent));
     mode('random').click();
     change('quantity-select', '1');
     await generateAndWait();
@@ -332,17 +336,22 @@ async function check(browser, url) {
       }
       counts.push(document.querySelectorAll('.result-row').length);
     }
-    return { hiddenOutsideKorea, defaultMode, enabled: !mode('filtered').disabled, counts, notes, randomNumbers, randomMode,
+    return { hiddenOutsideKorea, defaultMode, defaultRequest, defaultNumbers, overrides,
+      enabled: !mode('filtered').disabled, counts, randomNumbers, randomMode,
       results: document.getElementById('draw-analysis').innerText };
   });
   assert.ok(korean.hiddenOutsideKorea && korean.enabled);
-  assert.equal(korean.defaultMode, 'filtered');
+  assert.equal(korean.defaultMode, null);
+  assert.equal(korean.defaultRequest, 'kr-statistical');
+  assert.equal(korean.defaultNumbers.length, 6);
+  assert.equal(new Set(korean.defaultNumbers).size, 6);
+  assert.ok(korean.defaultNumbers.every(n => Number.isInteger(n) && n >= 1 && n <= 45));
   assert.equal(korean.randomMode, 'random');
   assert.deepEqual(korean.counts, [1, 3, 5, 10]);
-  assert.equal(korean.notes, 0);
+  assert.equal(korean.overrides, 2);
   assert.equal(korean.randomNumbers, 6);
   assert.match(korean.results, /COLD.*43 \(22\)/);
-  console.log('Korea Lotto modes and statistics work without a visible explanation or extra space');
+  console.log('Korea default statistical tickets and both existing overrides OK');
 
   const failure = await evalPage(async () => {
     const originalFetch = window.fetch;
