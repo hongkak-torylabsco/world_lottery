@@ -565,113 +565,6 @@ body {
   display: none;
 }
 
-.line-statistics {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-light);
-  font-size: 0.875rem;
-}
-
-.line-statistics summary {
-  color: #1e40af;
-  cursor: pointer;
-  padding-block: 4px;
-}
-
-.statistics-note {
-  margin-top: 6px;
-  color: #475569;
-  font-size: 0.875rem;
-}
-
-.statistics-controls {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 12px;
-}
-
-.statistics-controls label {
-  display: grid;
-  gap: 4px;
-  max-width: 100%;
-  font-size: 0.875rem;
-}
-
-.statistics-controls .form-select {
-  padding-block: 6px;
-}
-
-.statistics-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
-  gap: 8px 16px;
-  margin-top: 8px;
-  font-size: 0.875rem;
-}
-
-.statistics-facts dt {
-  color: #475569;
-}
-
-.statistics-facts dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-  font-weight: 600;
-}
-
-.statistics-chart-heading {
-  margin-top: 16px;
-  font-size: 0.95rem;
-}
-
-.statistics-chart {
-  max-height: 19rem;
-  overflow: auto;
-  margin-top: 8px;
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-}
-
-.statistics-chart:focus-visible,
-.line-statistics summary:focus-visible {
-  outline: 2px solid #1e40af;
-  outline-offset: 2px;
-}
-
-.statistics-chart table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-}
-
-.statistics-chart thead {
-  position: sticky;
-  top: 0;
-  background: #f8fafc;
-}
-
-.statistics-chart th,
-.statistics-chart td {
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border-light);
-  text-align: left;
-  overflow-wrap: anywhere;
-}
-
-.statistics-frequency {
-  display: grid;
-  grid-template-columns: 3ch minmax(2rem, 1fr);
-  align-items: center;
-  gap: 6px;
-}
-
-.statistics-frequency meter {
-  width: 100%;
-  height: 0.85rem;
-}
 
 /* Balls Container */
 .balls-wrapper {
@@ -1129,4 +1022,40 @@ body {
   .bonus-badge {
     font-size: 0.65rem;
   }
+}
+.analysis-card h2 {
+  margin-bottom: 0.75rem;
+}
+
+.analysis-card p,
+.analysis-card h3,
+.analysis-card h4 {
+  margin: 0.65rem 0;
+  overflow-wrap: anywhere;
+}
+
+.analysis-card summary {
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.frequency-graph {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.2rem 1rem;
+}
+
+.frequency-graph li {
+  display: grid;
+  grid-template-columns: 2ch minmax(0, 1fr) 4ch;
+  gap: 0.5rem;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.frequency-graph meter {
+  width: 100%;
 }
