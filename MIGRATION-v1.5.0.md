@@ -3,7 +3,7 @@
 ## v1.4.2 기준 동작
 
 - `script.js`의 생성 버튼과 묶음 수 변경이 14개 게임의 생성 진입점입니다. 한 장은 비복원 추출을, 여러 장은 `lottery.js`의 조합 순위 비복원 샘플링을 사용합니다. 구매자가 고르는 별도 번호는 독립 번호 풀에서 추출하며, 추첨 전용 보너스는 조합에 포함하지 않습니다.
-- `lottery.js` provides odds calculations and public draw summaries.
+- `lottery.js`에는 당첨 확률 계산, 통계 표시, 오프라인 데이터 집계가 들어 있습니다.
 - `script.js`는 생성 결과를 localStorage 기록과 즐겨찾기에 저장합니다. 공 표시, PNG, 공유, 클립보드는 동일한 구매 번호를 사용합니다. `index.html`은 생성 및 분석 스크립트를 불러오며 `style.css`는 공과 모바일 레이아웃을 담당합니다.
 - `scripts/`는 공식 이력 검증·집계와 Chrome 회귀 테스트를 담당합니다. `test/`의 Node 테스트는 브라우저 파일의 생성 함수를 직접 가져오고, Chrome 테스트는 기존 저장 기록과 UI 동작을 검증합니다.
 
