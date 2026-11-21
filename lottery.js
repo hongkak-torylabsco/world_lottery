@@ -252,7 +252,7 @@
 
   let historyRequest = 0;
   let archive;
-  async function renderHistory(game, lang, mainLabel, ballLabels) {
+  async function renderHistory(game, lang, mainLabel, ballLabels, gameEntry) {
     const request = ++historyRequest;
     const target = document.getElementById('draw-analysis');
     const t = labels[lang];
@@ -261,14 +261,16 @@
     element('p', t.notice, target);
     const content = element('div', '', target);
     try {
-      archive ||= fetch('data/analysis.json').then(response => {
-        if (!response.ok) throw new Error('Analysis unavailable');
-        return response.json();
-      }).catch(() => {
-        archive = null;
-        return {};
-      });
-      const entry = (await archive)[game.id];
+      if (!gameEntry) {
+        archive ||= fetch('data/analysis.json').then(response => {
+          if (!response.ok) throw new Error('Analysis unavailable');
+          return response.json();
+        }).catch(() => {
+          archive = null;
+          return {};
+        });
+      }
+      const entry = gameEntry ? await gameEntry : (await archive)[game.id];
       if (request !== historyRequest) return;
       if (!entry?.current) element('p', t.pending, content);
       if (entry?.source) {

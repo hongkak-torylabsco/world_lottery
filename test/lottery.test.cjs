@@ -67,7 +67,7 @@ test('official snapshot totals and tie-breaks are reproducible', () => {
   assert.equal(mega.previous[0].end, '2025-04-04');
   assert.equal(mega.current.bonus.length, 24);
   assert.equal(mega.previous[0].bonus.length, 25);
-  assert.equal(Object.values(archive).filter(entry => entry.status === 'pending').length, 12);
+  assert.equal(Object.values(archive).filter(entry => entry.status === 'pending').length, 11);
 });
 
 test('missing, duplicate, malformed and out-of-era draws are rejected', () => {

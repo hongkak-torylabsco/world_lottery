@@ -78,6 +78,18 @@
             </div>
           </form>
 
+          <div id="korea-mode-panel" class="form-group korea-mode" hidden>
+            <label id="korea-mode-label" class="form-label" for="korea-mode">생성 방식</label>
+            <div class="select-wrapper">
+              <select id="korea-mode" class="form-select" aria-describedby="korea-mode-info korea-mode-status">
+                <option value="random">일반 무작위 생성</option>
+                <option value="filtered" disabled>과거 당첨번호 유사 조합 제외</option>
+              </select>
+            </div>
+            <p id="korea-mode-info"></p>
+            <p id="korea-mode-status" role="status"></p>
+          </div>
+
           <!-- Action buttons -->
           <div class="action-bar">
             <button id="btn-generate" type="button" class="btn btn-primary">
@@ -170,6 +182,7 @@
   <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
 
   <script src="lottery.js" defer></script>
+  <script src="korea-lotto.js" defer></script>
   <script src="script.js" defer></script>
 </body>
 </html>

@@ -76,7 +76,7 @@ async function check(browser, url) {
   assert.deepEqual(await evalPage("JSON.parse(localStorage.getItem('worldLottery.history.v1'))"), [legacy]);
 
   const cases = [
-    [320, 'KR', 'ko', '공식 당첨 데이터 준비 중', 0],
+    [320, 'KR', 'ko', '260', 90],
     [390, 'US', 'en', '783', 95],
     [768, 'JP', 'ja', '公式当せんデータを準備中', 0],
     [1280, 'BR', 'pt-BR', 'Dados oficiais dos sorteios em preparação', 0]
@@ -122,7 +122,7 @@ async function check(browser, url) {
       country.value = option.value;
       country.dispatchEvent(new Event('change'));
       for (const choice of game.options) {
-        if (['us-powerball', 'us-megamillions'].includes(choice.value)) continue;
+        if (['kr-lotto-645', 'us-powerball', 'us-megamillions'].includes(choice.value)) continue;
         game.value = choice.value;
         game.dispatchEvent(new Event('change'));
         await new Promise(resolve => setTimeout(resolve, 0));
@@ -136,12 +136,12 @@ async function check(browser, url) {
     }
     return result;
   });
-  assert.equal(pending.length, 12);
+  assert.equal(pending.length, 11);
   assert.ok(pending.every(game => game.hasSource && !game.hasStatistics));
   const ukOdds = pending.find(game => game.id === 'uk-lotto').ukOdds;
   assert.match(ukOdds, /Jackpot in at least one of the two rounds/);
   assert.match(ukOdds, /22,528,737\.25/);
-  console.log('12 pending games and UK Lotto two-round odds OK');
+  console.log('11 pending games and UK Lotto two-round odds OK');
 
   const actions = await evalPage(async () => {
     const change = (id, value) => {
@@ -204,6 +204,78 @@ async function check(browser, url) {
   assert.match(actions.odds, /29,047,233\.6/);
   assert.deepEqual(actions.errors, []);
   console.log('Legacy storage, favorites, batch, odds, rule eras, PNG and share callbacks OK');
+
+  const korean = await evalPage(async () => {
+    const change = (id, value) => {
+      const select = document.getElementById(id);
+      select.value = value;
+      select.dispatchEvent(new Event('change'));
+      return select;
+    };
+    const panel = document.getElementById('korea-mode-panel');
+    const hiddenOutsideKorea = panel.hidden;
+    change('country-select', 'KR');
+    const mode = document.getElementById('korea-mode');
+    const defaultMode = mode.value;
+    const official = await fetch('data/kr-lotto645.json').then(response => response.json());
+    for (let i = 0; mode.options[1].disabled && i < 40; i++) {
+      await new Promise(resolve => setTimeout(resolve, 25));
+    }
+    change('korea-mode', 'filtered');
+    const counts = [];
+    for (const count of [1, 3, 5, 10]) {
+      change('quantity-select', String(count));
+      document.getElementById('btn-generate').click();
+      const saved = JSON.parse(localStorage.getItem('worldLottery.history.v1')).slice(0, count);
+      const lines = saved.map(row => row.main);
+      if (saved.some(row => row.gameId !== 'kr-lotto-645') ||
+          lines.some(main => official.draws.some(draw => draw.main.filter(n => main.includes(n)).length > 4)) ||
+          new Set(lines.map(main => main.join(','))).size !== count) {
+        throw new Error('Filtered Korea Lotto batch failed');
+      }
+      counts.push(document.querySelectorAll('.result-row').length);
+    }
+    return { hiddenOutsideKorea, defaultMode, enabled: !mode.options[1].disabled, counts,
+      metadata: document.getElementById('korea-mode-status').innerText,
+      results: document.getElementById('draw-analysis').innerText };
+  });
+  assert.ok(korean.hiddenOutsideKorea && korean.enabled);
+  assert.equal(korean.defaultMode, 'random');
+  assert.deepEqual(korean.counts, [1, 3, 5, 10]);
+  assert.match(korean.metadata, /분석 기준일.*분석 회차 수 260.*데이터 갱신일/);
+  assert.match(korean.results, /COLD.*43 \(22\)/);
+  console.log('Korea Lotto filter, metadata and default mode OK');
+
+  for (const response of ["new Response(null, {status:404})", "new Response('{}')"]) {
+    const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', {
+      source: `(() => {
+        const original = window.fetch;
+        window.fetch = (url, ...args) => url === 'data/kr-lotto645.json'
+          ? Promise.resolve(${response}) : original(url, ...args);
+      })()`
+    });
+    await send('Page.reload');
+    const unavailable = "document.querySelector('#korea-mode-status')?.textContent.includes('필터를 사용할 수 없습니다.')";
+    for (let i = 0; !(await evalPage(unavailable)) && i < 40; i++) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    assert.ok(await evalPage(unavailable));
+    const state = await evalPage(() => {
+      const mode = document.getElementById('korea-mode');
+      const disabled = mode.options[1].disabled;
+      const generate = document.getElementById('btn-generate');
+      mode.options[1].disabled = false;
+      mode.value = 'filtered';
+      generate.click();
+      const filtered = document.querySelectorAll('.result-row').length;
+      mode.value = 'random';
+      generate.click();
+      return { disabled, filtered, random: document.querySelectorAll('.result-row').length };
+    });
+    assert.deepEqual(state, { disabled: true, filtered: 0, random: 5 });
+    await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+  }
+  console.log('Missing and invalid Korea data disable the filter without fallback');
 }
 
 async function main() {

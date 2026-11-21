@@ -890,7 +890,7 @@
     });
 
     updateRules(game, country.lang, t);
-    lottery.renderHistory(game, country.lang, t.mainLabel, t.ballLabels);
+    lottery.renderHistory(game, country.lang, t.mainLabel, t.ballLabels, updateKoreaMode(game, country.lang));
 
     // Update empty state text if empty
     if (emptyState && currentResults.length === 0) {
@@ -1316,6 +1316,78 @@
     announce(t.resultsGenerated(sets.length));
   }
 
+  const koreaModeLabels = {
+    ko: {
+      title: '생성 방식', random: '일반 무작위 생성', filtered: '과거 당첨번호 유사 조합 제외',
+      info: '',
+      loading: '공식 당첨 데이터를 확인하는 중입니다.',
+      unavailable: '공식 당첨 데이터가 없거나 검증에 실패해 필터를 사용할 수 없습니다.',
+      failed: '시도 한도 안에 조건을 만족하는 조합을 만들지 못했습니다. 다시 시도해 주세요.',
+      cutoff: '분석 기준일', draws: '분석 회차 수', updated: '데이터 갱신일'
+    },
+    en: {
+      title: 'Generation mode', random: 'Uniform random', filtered: 'Exclude combinations similar to past draws',
+      info: '',
+      loading: 'Checking official draw data.',
+      unavailable: 'The filter is unavailable because official draw data is missing or could not be validated.',
+      failed: 'The attempt limit was reached before a valid batch could be generated. Try again.',
+      cutoff: 'Analysis cutoff', draws: 'Draws analyzed', updated: 'Data updated'
+    },
+    ja: {
+      title: '生成方式', random: '一様なランダム生成', filtered: '過去の当せん数字に近い組み合わせを除外',
+      info: '',
+      loading: '公式の抽せんデータを確認しています。',
+      unavailable: '公式データがないか、検証できないため、フィルターを利用できません。',
+      failed: '試行回数の上限までに条件を満たす組み合わせを生成できませんでした。もう一度お試しください。',
+      cutoff: '分析基準日', draws: '分析した抽せん回数', updated: 'データ更新日'
+    },
+    'pt-BR': {
+      title: 'Modo de geração', random: 'Geração aleatória uniforme', filtered: 'Excluir combinações semelhantes a sorteios anteriores',
+      info: '',
+      loading: 'Verificando os dados oficiais dos sorteios.',
+      unavailable: 'O filtro está indisponível porque os dados oficiais estão ausentes ou não puderam ser validados.',
+      failed: 'O limite de tentativas foi atingido antes de gerar combinações válidas. Tente novamente.',
+      cutoff: 'Data de corte da análise', draws: 'Sorteios analisados', updated: 'Atualização dos dados'
+    }
+  };
+  let koreaPending;
+  let koreaData;
+
+  function updateKoreaMode(game, lang) {
+    const panel = document.getElementById('korea-mode-panel');
+    panel.hidden = game.id !== window.koreaLotto.gameId;
+    if (panel.hidden) return;
+
+    const t = koreaModeLabels[lang];
+    const select = document.getElementById('korea-mode');
+    const info = document.getElementById('korea-mode-info');
+    const status = document.getElementById('korea-mode-status');
+    document.getElementById('korea-mode-label').textContent = t.title;
+    for (const option of select.options) option.textContent = t[option.value];
+    info.textContent = t.info;
+    status.textContent = t.loading;
+    koreaPending ||= fetch('data/kr-lotto645.json').then(response => {
+      if (!response.ok) throw new Error('Korea Lotto history unavailable');
+      return response.json();
+    }).then(snapshot => {
+      koreaData = window.koreaLotto.prepareSnapshot(snapshot);
+      return koreaData;
+    }).catch(() => null);
+
+    return koreaPending.then(data => {
+      if (getCurrentGame().id === game.id && getCurrentCountry().lang === lang) {
+        select.options[1].disabled = !data;
+        const format = new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' });
+        status.textContent = data
+          ? t.cutoff + ' ' + format.format(new Date(data.entry.through)) +
+            ' · ' + t.draws + ' ' + data.entry.current.count +
+            ' · ' + t.updated + ' ' + format.format(new Date(data.entry.updated))
+          : t.unavailable;
+      }
+      return data?.entry || { source: window.koreaLotto.source };
+    });
+  }
+
   // 10. Draw Action
   function renderOdds() {
     const count = Number(quantitySelect.value);
@@ -1326,7 +1398,25 @@
     const game = getCurrentGame();
     const count = parseInt(quantitySelect.value, 10) || 5;
 
-    const sets = generateBatch(game, count).map(line => createRecord(game, line));
+    let lines;
+    if (game.id === window.koreaLotto.gameId && document.getElementById('korea-mode').value === 'filtered') {
+      const t = koreaModeLabels[getCurrentCountry().lang];
+      try {
+        if (!koreaData) {
+          announce(t.unavailable);
+          showToast(t.unavailable);
+          return;
+        }
+        lines = koreaData.generate(count, getRandomInt);
+      } catch {
+        announce(t.failed);
+        showToast(t.failed);
+        return;
+      }
+    } else {
+      lines = generateBatch(game, count);
+    }
+    const sets = lines.map(line => createRecord(game, line));
 
     if (recordHistory) {
       readSavedList('history');
@@ -1657,6 +1747,7 @@
     });
 
     btnGenerate.addEventListener('click', () => handleGenerate(true));
+    document.getElementById('korea-mode').addEventListener('change', handleClear);
     btnCopyAll.addEventListener('click', copyAllResults);
     btnClear.addEventListener('click', handleClear);
     document.getElementById('show-history').addEventListener('click', () => {

@@ -1059,3 +1059,21 @@ body {
 .frequency-graph meter {
   width: 100%;
 }
+.korea-mode {
+  margin-top: 1rem;
+}
+
+.korea-mode[hidden] {
+  display: none;
+}
+
+.korea-mode .form-select {
+  text-overflow: ellipsis;
+}
+
+.korea-mode p {
+  color: inherit;
+  font-size: 0.875rem;
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
