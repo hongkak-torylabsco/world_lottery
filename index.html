@@ -78,15 +78,13 @@
             </div>
           </form>
 
-          <div id="korea-mode-panel" class="form-group korea-mode" hidden>
-            <label id="korea-mode-label" class="form-label" for="korea-mode">생성 방식</label>
-            <div class="select-wrapper">
-              <select id="korea-mode" class="form-select">
-                <option value="random">일반 무작위 생성</option>
-                <option value="filtered">과거 당첨번호 유사 조합 제외</option>
-              </select>
+          <fieldset id="korea-mode-panel" class="form-group korea-mode" hidden>
+            <legend id="korea-mode-label" class="form-label">생성 방식</legend>
+            <div class="korea-mode-options">
+              <label><input type="radio" name="korea-mode" value="filtered" checked> <span>최근 당첨번호 유사 조합 제외</span></label>
+              <label><input type="radio" name="korea-mode" value="random"> <span>일반 무작위 생성</span></label>
             </div>
-          </div>
+          </fieldset>
 
           <!-- Action buttons -->
           <div class="action-bar">

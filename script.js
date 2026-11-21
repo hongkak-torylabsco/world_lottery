@@ -676,6 +676,7 @@
   let activeGeneration = null;
   const generationPath = '/api/v1/generate';
   const koreaGameId = 'kr-lotto-645';
+  const koreaModeKey = 'worldLottery.koreaMode.v1';
   let toastTimeout = null;
 
   // 6. Helpers
@@ -1217,7 +1218,7 @@
 
   const koreaModeLabels = {
     ko: {
-      title: '생성 방식', random: '일반 무작위 생성', filtered: '과거 당첨번호 유사 조합 제외'
+      title: '생성 방식', random: '일반 무작위 생성', filtered: '최근 당첨번호 유사 조합 제외'
     },
     en: {
       title: 'Generation mode', random: 'Uniform random', filtered: 'Exclude combinations similar to past draws'
@@ -1237,8 +1238,19 @@
 
     const labels = koreaModeLabels[lang];
     document.getElementById('korea-mode-label').textContent = labels.title;
-    for (const option of document.getElementById('korea-mode').options) {
-      option.textContent = labels[option.value];
+    for (const option of panel.querySelectorAll('input[name="korea-mode"]')) {
+      option.nextElementSibling.textContent = labels[option.value];
+    }
+  }
+
+  function restoreKoreaMode() {
+    try {
+      const saved = window.localStorage.getItem(koreaModeKey);
+      if (saved === 'random' || saved === 'filtered') {
+        document.querySelector(`input[name="korea-mode"][value="${saved}"]`).checked = true;
+      }
+    } catch {
+      // The checked default also works when browser storage is unavailable.
     }
   }
 
@@ -1277,7 +1289,8 @@
     if (activeGeneration) return;
     const game = getCurrentGame();
     const count = Number(quantitySelect.value);
-    const historical = game.id === koreaGameId && document.getElementById('korea-mode').value === 'filtered';
+    const historical = game.id === koreaGameId &&
+      document.querySelector('input[name="korea-mode"]:checked')?.value === 'filtered';
     const mode = historical ? 'historical-filter' : 'random';
     const controller = new AbortController();
     activeGeneration = controller;
@@ -1644,7 +1657,15 @@
     });
 
     btnGenerate.addEventListener('click', () => handleGenerate(true));
-    document.getElementById('korea-mode').addEventListener('change', handleClear);
+    document.getElementById('korea-mode-panel').addEventListener('change', event => {
+      if (event.target.name !== 'korea-mode' || !event.target.checked) return;
+      try {
+        window.localStorage.setItem(koreaModeKey, event.target.value);
+      } catch {
+        // Keep the current choice in the page if storage is unavailable.
+      }
+      handleClear();
+    });
     btnCopyAll.addEventListener('click', copyAllResults);
     btnClear.addEventListener('click', handleClear);
     document.getElementById('show-history').addEventListener('click', () => {
@@ -1673,6 +1694,7 @@
     // Default: 대한민국 (KR)
     if (countrySelect) countrySelect.value = 'KR';
     updateGamesForCountry('KR');
+    restoreKoreaMode();
     updateInterfaceLocalization();
     Object.keys(SAVED_KEYS).forEach(readSavedList);
     renderSaved();

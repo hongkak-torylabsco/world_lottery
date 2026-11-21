@@ -49,6 +49,12 @@ async function check(browser, url) {
   await send('Page.enable');
   await send('Page.addScriptToEvaluateOnNewDocument', {
     source: String.raw`
+      window.generationRequests = [];
+      const sendFetch = window.fetch.bind(window);
+      window.fetch = (url, options) => {
+        if (url === '/api/v1/generate') generationRequests.push(JSON.parse(options.body));
+        return sendFetch(url, options);
+      };
       window.generateAndWait = async () => {
         const button = document.getElementById('btn-generate');
         button.click();
@@ -274,6 +280,11 @@ async function check(browser, url) {
             document.documentElement.scrollWidth > innerWidth) {
           throw new Error('Invalid result layout for ' + choice.value);
         }
+        const request = generationRequests.at(-1);
+        if (request.gameId !== choice.value ||
+            request.mode !== (choice.value === 'kr-lotto-645' ? 'historical-filter' : 'random')) {
+          throw new Error('Invalid generation request for ' + choice.value);
+        }
         counts[choice.value] = [main, extra];
       }
     }
@@ -297,18 +308,21 @@ async function check(browser, url) {
     const panel = document.getElementById('korea-mode-panel');
     const hiddenOutsideKorea = panel.hidden;
     change('country-select', 'KR');
-    const mode = document.getElementById('korea-mode');
-    const defaultMode = mode.value;
+    const mode = value => panel.querySelector('input[value="' + value + '"]');
+    const defaultMode = panel.querySelector('input:checked').value;
     const notes = panel.querySelectorAll('p').length;
+    mode('random').click();
     change('quantity-select', '1');
     await generateAndWait();
+    const randomMode = generationRequests.at(-1).mode;
     const randomNumbers = document.querySelectorAll('.result-row .lotto-ball').length;
-    change('korea-mode', 'filtered');
+    mode('filtered').click();
     const counts = [];
     for (const count of [1, 3, 5, 10]) {
       document.getElementById('btn-clear').click();
       change('quantity-select', String(count));
       await generateAndWait();
+      if (generationRequests.at(-1).mode !== 'historical-filter') throw new Error('Missing filter mode');
       const saved = JSON.parse(localStorage.getItem('worldLottery.history.v1')).slice(0, count);
       const lines = saved.map(row => row.main);
       if (saved.some(row => row.gameId !== 'kr-lotto-645') ||
@@ -318,11 +332,12 @@ async function check(browser, url) {
       }
       counts.push(document.querySelectorAll('.result-row').length);
     }
-    return { hiddenOutsideKorea, defaultMode, enabled: !mode.options[1].disabled, counts, notes, randomNumbers,
+    return { hiddenOutsideKorea, defaultMode, enabled: !mode('filtered').disabled, counts, notes, randomNumbers, randomMode,
       results: document.getElementById('draw-analysis').innerText };
   });
   assert.ok(korean.hiddenOutsideKorea && korean.enabled);
-  assert.equal(korean.defaultMode, 'random');
+  assert.equal(korean.defaultMode, 'filtered');
+  assert.equal(korean.randomMode, 'random');
   assert.deepEqual(korean.counts, [1, 3, 5, 10]);
   assert.equal(korean.notes, 0);
   assert.equal(korean.randomNumbers, 6);
@@ -361,6 +376,21 @@ async function check(browser, url) {
     rows: 0, recovered: true });
   console.log('API loading, duplicate-click prevention, localized errors and stale requests OK');
 
+  for (const mode of ['random', 'filtered']) {
+    await evalPage(`(() => {
+      const country = document.getElementById('country-select');
+      country.value = 'KR';
+      country.dispatchEvent(new Event('change'));
+      document.querySelector('input[name="korea-mode"][value="' + ${JSON.stringify(mode)} + '"]').click();
+    })()`);
+    await send('Page.reload');
+    for (let i = 0; i < 80; i++) {
+      if (await evalPage("document.querySelector('#korea-mode-panel')?.hidden === false")) break;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    assert.equal(await evalPage("document.querySelector('input[name=korea-mode]:checked')?.value"), mode);
+  }
+  console.log('Explicit choices for both Korea modes survive reload');
 }
 
 async function main() {
@@ -370,7 +400,7 @@ async function main() {
   const profile = await mkdtemp(join(tmpdir(), 'lottery-chrome-'));
   const browser = spawn(executable, ['--headless', '--remote-debugging-pipe', '--no-first-run',
     '--disable-background-networking', '--no-proxy-server',
-    '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1', '--user-data-dir=' + profile],
+    '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE ' + new URL(url).hostname, '--user-data-dir=' + profile],
   { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] });
   const ended = once(browser, 'exit');
   const timeout = setTimeout(() => browser.kill(), 30000);
