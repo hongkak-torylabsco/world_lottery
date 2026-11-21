@@ -56,11 +56,19 @@ async function check(browser, url) {
     rules: { displayName: 'Mega Millions', main: { min: 1, max: 70, count: 5 },
       bonus: { type: 'independent', min: 1, max: 25, count: 1, labelKey: 'megaball' } }
   };
+  const legacyKorea = {
+    id: 'legacy-korea', createdAt: 1700000000000, countryId: 'KR', gameId: 'kr-lotto-645',
+    main: [1, 2, 3, 4, 5, 6], bonus: [45],
+    rules: { displayName: 'Lotto 6/45', main: { min: 1, max: 45, count: 6 },
+      bonus: { type: 'remaining_main', count: 1, labelKey: 'bonus' } }
+  };
+  const legacyRecords = [legacy, legacyKorea];
   await send('Page.addScriptToEvaluateOnNewDocument', {
     source: `
-      const fixture = ${JSON.stringify(legacy)};
-      localStorage.setItem('worldLottery.history.v1', JSON.stringify([fixture]));
-      localStorage.setItem('worldLottery.favorites.v1', JSON.stringify([{ ...fixture, favoritedAt: fixture.createdAt }]));
+      const fixtures = ${JSON.stringify(legacyRecords)};
+      localStorage.setItem('worldLottery.history.v1', JSON.stringify(fixtures));
+      localStorage.setItem('worldLottery.favorites.v1', JSON.stringify(fixtures.map(fixture =>
+        ({ ...fixture, favoritedAt: fixture.createdAt }))));
       window.errors = [];
       window.addEventListener('error', event => errors.push(event.message));
       window.addEventListener('unhandledrejection', event => errors.push(String(event.reason)));
@@ -72,8 +80,8 @@ async function check(browser, url) {
     if (await evalPage("Boolean(document.querySelector('#draw-analysis a'))")) break;
     await new Promise(resolve => setTimeout(resolve, 100));
   }
-  assert.equal(await evalPage("document.querySelector('#saved-list').children.length"), 1);
-  assert.deepEqual(await evalPage("JSON.parse(localStorage.getItem('worldLottery.history.v1'))"), [legacy]);
+  assert.equal(await evalPage("document.querySelector('#saved-list').children.length"), 2);
+  assert.deepEqual(await evalPage("JSON.parse(localStorage.getItem('worldLottery.history.v1'))"), legacyRecords);
 
   const cases = [
     [320, 'KR', 'ko', '260', 90],
@@ -163,6 +171,7 @@ async function check(browser, url) {
     row.querySelector('[data-favorite-id]').click();
     await document.fonts.ready;
     button(row, 'Share numbers').click();
+    const currentClipboard = clipboard;
     let png, filename;
     const createObjectURL = URL.createObjectURL;
     URL.createObjectURL = function (blob) { png = blob; return createObjectURL.call(URL, blob); };
@@ -174,6 +183,25 @@ async function check(browser, url) {
     const save = button(row, 'Save image');
     save.click();
     while (save.getAttribute('aria-busy') === 'true') await new Promise(resolve => setTimeout(resolve, 10));
+    const currentPng = png;
+    const currentFilename = filename;
+    const favorite = document.querySelector('#show-favorites');
+    favorite.click();
+    const savedRows = [...document.querySelectorAll('#saved-list .saved-record')];
+    const oldKorea = savedRows.find(item => item.querySelector('strong').textContent.includes('Lotto 6/45'));
+    const oldMega = savedRows.find(item => item.querySelector('.saved-extra')?.textContent.endsWith('25'));
+    button(oldKorea, 'Share numbers').click();
+    const legacyClipboard = clipboard;
+    const fillText = CanvasRenderingContext2D.prototype.fillText;
+    const legacyBalls = [];
+    CanvasRenderingContext2D.prototype.fillText = function (value, x, y, ...args) {
+      if (y === 410) legacyBalls.push(Number(value));
+      return fillText.call(this, value, x, y, ...args);
+    };
+    const legacySave = button(oldKorea, 'Save image');
+    legacySave.click();
+    while (legacySave.getAttribute('aria-busy') === 'true') await new Promise(resolve => setTimeout(resolve, 10));
+    CanvasRenderingContext2D.prototype.fillText = fillText;
     URL.createObjectURL = createObjectURL;
     HTMLAnchorElement.prototype.click = clickAnchor;
     let shared;
@@ -184,26 +212,71 @@ async function check(browser, url) {
     if (oldShare) Object.defineProperty(navigator, 'share', oldShare);
     const records = JSON.parse(localStorage.getItem('worldLottery.history.v1'));
     const favorites = JSON.parse(localStorage.getItem('worldLottery.favorites.v1'));
-    return { rows: resultRows.length, records, favorites, clipboard, filename,
-      png: png && [...new Uint8Array(await png.slice(0, 8).arrayBuffer())],
+    const signature = async blob => blob && [...new Uint8Array(await blob.slice(0, 8).arrayBuffer())];
+    return { rows: resultRows.length, records, favorites, clipboard: currentClipboard, filename: currentFilename,
+      png: await signature(currentPng), legacyPng: await signature(png), legacyBalls, legacyClipboard,
+      legacyExtra: oldKorea.querySelector('.saved-extra')?.textContent ?? null,
+      megaExtra: oldMega?.querySelector('.saved-extra')?.textContent,
       shared: { title: shared?.title, mime: shared?.files?.[0]?.type },
       historical: [...document.querySelectorAll('#draw-analysis details')].some(details =>
         details.textContent.includes('5/70 + 1/25')),
       odds: document.querySelector('#jackpot-odds').innerText, errors: window.errors };
   });
   assert.equal(actions.rows, 10);
-  assert.equal(actions.records.length, 11);
-  assert.deepEqual(actions.records.at(-1), legacy);
+  assert.equal(actions.records.length, 12);
+  assert.deepEqual(actions.records.slice(-2), legacyRecords);
   assert.equal(new Set(actions.records.slice(0, 10).map(row => JSON.stringify([row.main, row.bonus]))).size, 10);
-  assert.equal(actions.favorites.length, 2);
-  assert.match(actions.clipboard, /Mega Millions/);
+  assert.equal(actions.favorites.length, 3);
+  assert.match(actions.clipboard, /Mega Ball: \d+/);
+  assert.match(actions.legacyClipboard, /^Lotto 6\/45\n[^\n]+: 1, 2, 3, 4, 5, 6\nhttps:/);
+  assert.equal(actions.legacyExtra, null);
+  assert.match(actions.megaExtra, /25$/);
+  assert.deepEqual(actions.legacyBalls, [1, 2, 3, 4, 5, 6]);
   assert.match(actions.filename, /\.png$/);
   assert.deepEqual(actions.png, [137, 80, 78, 71, 13, 10, 26, 10]);
+  assert.deepEqual(actions.legacyPng, actions.png);
   assert.deepEqual(actions.shared, { title: 'Mega Millions', mime: 'image/png' });
   assert.equal(actions.historical, true);
   assert.match(actions.odds, /29,047,233\.6/);
   assert.deepEqual(actions.errors, []);
   console.log('Legacy storage, favorites, batch, odds, rule eras, PNG and share callbacks OK');
+
+  await send('Emulation.setDeviceMetricsOverride', { width: 320, height: 900, deviceScaleFactor: 1, mobile: false });
+  const generated = await evalPage(() => {
+    const country = document.getElementById('country-select');
+    const game = document.getElementById('game-select');
+    const quantity = document.getElementById('quantity-select');
+    const select = (input, value) => {
+      input.value = value;
+      input.dispatchEvent(new Event('change'));
+    };
+    const counts = {};
+    select(quantity, '1');
+    for (const option of country.options) {
+      select(country, option.value);
+      for (const choice of game.options) {
+        select(game, choice.value);
+        document.getElementById('btn-generate').click();
+        const row = document.querySelector('.result-row');
+        const main = row.querySelectorAll('.main-balls .lotto-ball').length;
+        const extra = row.querySelectorAll('.bonus-balls .lotto-ball').length;
+        if (Boolean(extra) !== Boolean(row.querySelector('.bonus-divider')) ||
+            Boolean(extra) !== Boolean(row.querySelector('.bonus-badge')) ||
+            document.documentElement.scrollWidth > innerWidth) {
+          throw new Error('Invalid result layout for ' + choice.value);
+        }
+        counts[choice.value] = [main, extra];
+      }
+    }
+    return counts;
+  });
+  assert.deepEqual(generated, {
+    'kr-lotto-645': [6, 0], 'us-powerball': [5, 1], 'us-megamillions': [5, 1], 'uk-lotto': [6, 0],
+    'eu-euromillions': [5, 2], 'eu-eurojackpot': [5, 2], 'jp-loto-6': [6, 0], 'jp-loto-7': [7, 0],
+    'ca-lotto-649': [6, 0], 'au-oz-lotto': [7, 0], 'au-powerball': [7, 1], 'br-mega-sena': [6, 0],
+    'sg-toto': [6, 0], 'za-powerball': [5, 1]
+  });
+  console.log('All 14 ticket layouts show the selected balls at 320px');
 
   const korean = await evalPage(async () => {
     const change = (id, value) => {
@@ -229,6 +302,7 @@ async function check(browser, url) {
       const saved = JSON.parse(localStorage.getItem('worldLottery.history.v1')).slice(0, count);
       const lines = saved.map(row => row.main);
       if (saved.some(row => row.gameId !== 'kr-lotto-645') ||
+          saved.some(row => row.main.length !== 6 || row.bonus.length !== 0) ||
           lines.some(main => official.draws.some(draw => draw.main.filter(n => main.includes(n)).length > 4)) ||
           new Set(lines.map(main => main.join(','))).size !== count) {
         throw new Error('Filtered Korea Lotto batch failed');

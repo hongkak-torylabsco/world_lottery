@@ -23,19 +23,19 @@
 
   // 2. Lottery Game Definitions
   // 14 games across 10 countries as specified:
-  // - Korea Lotto 6/45: 6/45 + 1 bonus (remaining main pool)
+  // - Korea Lotto 6/45: 6/45
   // - US Powerball: 5/69 + 1/26 (independent pool)
   // - US Mega Millions: 5/70 + 1/24 (independent pool)
-  // - UK Lotto: 6/59 + 1 bonus (remaining main pool)
+  // - UK Lotto: 6/59
   // - EuroMillions: 5/50 + 2/12 Lucky Stars (independent pool)
   // - EuroJackpot: 5/50 + 2/12 Euro Numbers (independent pool)
-  // - Japan LOTO 6: 6/43 + 1 bonus (remaining main pool)
-  // - Japan LOTO 7: 7/37 + 2 bonus (remaining main pool)
-  // - Canada Lotto 6/49: 6/49 + 1 bonus (remaining main pool)
-  // - Australia Oz Lotto: 7/47 + 3 supplementary (remaining main pool)
+  // - Japan LOTO 6: 6/43
+  // - Japan LOTO 7: 7/37
+  // - Canada Lotto 6/49: 6/49
+  // - Australia Oz Lotto: 7/47
   // - Australia Powerball: 7/35 + 1/20 (independent pool)
-  // - Brazil Mega-Sena: 6/60 no bonus
-  // - Singapore TOTO: 6/49 + 1 additional (remaining main pool)
+  // - Brazil Mega-Sena: 6/60
+  // - Singapore TOTO: 6/49
   // - South Africa PowerBall: 5/50 + 1/16 (independent pool)
 
   const GAMES = [
@@ -52,18 +52,11 @@
       name: 'Korea Lotto 6/45',
       displayName: '로또 6/45 (Lotto 6/45)',
       main: { min: 1, max: 45, count: 6 },
-      bonus: {
-        type: 'remaining_main',
+      drawBonus: {
         count: 1,
         labelKey: 'bonus'
       },
-      ballStyle: 'korea',
-      rulesText: {
-        en: '6 main numbers from 1 to 45 (no replacement) + 1 bonus ball from the remaining 39 numbers.',
-        ko: '1부터 45까지 중 본번호 6개 추첨 (중복 없음) + 남은 39개 중 보너스 번호 1개 추첨.',
-        ja: '1〜45の中から本数字6個（重複なし）＋ 残り39個からボーナス数字1個を抽選。',
-        'pt-BR': '6 números principais de 1 a 45 (sem reposição) + 1 bola bônus do grupo restante de 39.'
-      }
+      ballStyle: 'korea'
     },
     {
       id: 'us-powerball',
@@ -77,8 +70,7 @@
       name: 'US Powerball',
       displayName: 'Powerball',
       main: { min: 1, max: 69, count: 5 },
-      bonus: {
-        type: 'independent',
+      playerSelectedExtra: {
         min: 1,
         max: 26,
         count: 1,
@@ -87,7 +79,7 @@
       ballStyle: 'us-powerball',
       rulesText: {
         en: '5 white balls from 1 to 69 (no replacement) + 1 red Powerball from independent pool 1 to 26.',
-        ko: '1부터 69까지 화이트볼 5개 (중복 없음) + 독립 풀 1부터 26까지 레드 파워볼 1개 추첨.',
+        ko: '1부터 69까지 화이트볼 5개 (중복 없음) + 독립 풀 1부터 26까지 레드 파워볼 1개 선택.',
         ja: '1〜69の中から白ボール5個（重複なし）＋ 1〜26の独立枠から赤のパワーボール1個。',
         'pt-BR': '5 bolas brancas de 1 a 69 (sem reposição) + 1 Powerball vermelha do grupo independente de 1 a 26.'
       }
@@ -104,8 +96,7 @@
       name: 'US Mega Millions',
       displayName: 'Mega Millions',
       main: { min: 1, max: 70, count: 5 },
-      bonus: {
-        type: 'independent',
+      playerSelectedExtra: {
         min: 1,
         max: 24,
         count: 1,
@@ -114,7 +105,7 @@
       ballStyle: 'us-megamillions',
       rulesText: {
         en: '5 white balls from 1 to 70 (no replacement) + 1 golden Mega Ball from independent pool 1 to 24.',
-        ko: '1부터 70까지 화이트볼 5개 (중복 없음) + 독립 풀 1부터 24까지 골드 메가볼 1개 추첨.',
+        ko: '1부터 70까지 화이트볼 5개 (중복 없음) + 독립 풀 1부터 24까지 골드 메가볼 1개 선택.',
         ja: '1〜70の中から白ボール5個（重複なし）＋ 1〜24の独立枠からゴールドのメガボール1個。',
         'pt-BR': '5 bolas brancas de 1 a 70 (sem reposição) + 1 Mega Ball dourada do grupo independente de 1 a 24.'
       }
@@ -132,17 +123,16 @@
       name: 'UK Lotto',
       displayName: 'UK Lotto',
       main: { min: 1, max: 59, count: 6 },
-      bonus: {
-        type: 'remaining_main',
+      drawBonus: {
         count: 1,
         labelKey: 'bonus'
       },
       ballStyle: 'uk-lotto',
       rulesText: {
-        en: 'The same ticket numbers enter both rounds. In each round, 6 distinct main numbers are drawn from 1 to 59 and 1 bonus ball from the remaining 53.',
-        ko: '구매한 같은 번호로 두 라운드에 모두 참여합니다. 각 라운드에서 1~59 중 본번호 6개를 중복 없이 뽑고, 남은 53개 중 보너스 번호 1개를 뽑습니다.',
-        ja: '購入した同じ数字で2ラウンドに参加します。各ラウンドでは1〜59から重複なしで本数字6個を選び、残り53個からボーナス数字1個を抽せんします。',
-        'pt-BR': 'Os mesmos números da aposta entram nas duas rodadas. Em cada rodada são sorteados 6 números distintos de 1 a 59 e 1 bola bônus entre os 53 restantes.'
+        en: 'The same ticket numbers enter both rounds.',
+        ko: '구매한 같은 번호로 두 라운드에 모두 참여합니다.',
+        ja: '購入した同じ数字で2ラウンドに参加します。',
+        'pt-BR': 'Os mesmos números da aposta entram nas duas rodadas.'
       }
     },
     {
@@ -157,8 +147,7 @@
       name: 'EuroMillions',
       displayName: 'EuroMillions',
       main: { min: 1, max: 50, count: 5 },
-      bonus: {
-        type: 'independent',
+      playerSelectedExtra: {
         min: 1,
         max: 12,
         count: 2,
@@ -167,7 +156,7 @@
       ballStyle: 'euromillions',
       rulesText: {
         en: '5 main numbers from 1 to 50 (no replacement) + 2 Lucky Stars from independent pool 1 to 12.',
-        ko: '1부터 50까지 본번호 5개 (중복 없음) + 독립 풀 1부터 12까지 럭키 스타 2개 추첨.',
+        ko: '1부터 50까지 본번호 5개 (중복 없음) + 독립 풀 1부터 12까지 럭키 스타 2개 선택.',
         ja: '1〜50の中から本数字5個（重複なし）＋ 1〜12の独立枠からラッキースター2個。',
         'pt-BR': '5 números principais de 1 a 50 (sem reposição) + 2 Estrelas da Sorte do grupo independente de 1 a 12.'
       }
@@ -185,8 +174,7 @@
       name: 'EuroJackpot',
       displayName: 'EuroJackpot',
       main: { min: 1, max: 50, count: 5 },
-      bonus: {
-        type: 'independent',
+      playerSelectedExtra: {
         min: 1,
         max: 12,
         count: 2,
@@ -195,7 +183,7 @@
       ballStyle: 'eurojackpot',
       rulesText: {
         en: '5 main numbers from 1 to 50 (no replacement) + 2 Euro Numbers from independent pool 1 to 12.',
-        ko: '1부터 50까지 본번호 5개 (중복 없음) + 독립 풀 1부터 12까지 유로 넘버 2개 추첨.',
+        ko: '1부터 50까지 본번호 5개 (중복 없음) + 독립 풀 1부터 12까지 유로 넘버 2개 선택.',
         ja: '1〜50の中から本数字5個（重複なし）＋ 1〜12の独立枠からユーロナンバー2個。',
         'pt-BR': '5 números principais de 1 a 50 (sem reposição) + 2 Números Euro do grupo independente de 1 a 12.'
       }
@@ -212,18 +200,11 @@
       name: 'Japan LOTO 6',
       displayName: 'ロト6 (LOTO 6)',
       main: { min: 1, max: 43, count: 6 },
-      bonus: {
-        type: 'remaining_main',
+      drawBonus: {
         count: 1,
         labelKey: 'bonus'
       },
-      ballStyle: 'japan',
-      rulesText: {
-        en: '6 main numbers from 1 to 43 (no replacement) + 1 bonus ball from the remaining 37 numbers.',
-        ko: '1부터 43까지 본번호 6개 추첨 (중복 없음) + 남은 37개 중 보너스 번호 1개 추첨.',
-        ja: '1〜43の中から本数字6個（重複なし）＋ 残り37個からボーナス数字1個を抽選。',
-        'pt-BR': '6 números principais de 1 a 43 (sem reposição) + 1 bola bônus do grupo restante de 37.'
-      }
+      ballStyle: 'japan'
     },
     {
       id: 'jp-loto-7',
@@ -238,18 +219,11 @@
       name: 'Japan LOTO 7',
       displayName: 'ロト7 (LOTO 7)',
       main: { min: 1, max: 37, count: 7 },
-      bonus: {
-        type: 'remaining_main',
+      drawBonus: {
         count: 2,
         labelKey: 'bonus'
       },
-      ballStyle: 'japan',
-      rulesText: {
-        en: '7 main numbers from 1 to 37 (no replacement) + 2 bonus balls from the remaining 30 numbers.',
-        ko: '1부터 37까지 본번호 7개 추첨 (중복 없음) + 남은 30개 중 보너스 번호 2개 추첨.',
-        ja: '1〜37の中から本数字7個（重複なし）＋ 残り30個からボーナス数字2個を抽選。',
-        'pt-BR': '7 números principais de 1 a 37 (sem reposição) + 2 bolas bônus do grupo restante de 30.'
-      }
+      ballStyle: 'japan'
     },
     {
       id: 'ca-lotto-649',
@@ -263,17 +237,16 @@
       name: 'Canada Lotto 6/49',
       displayName: 'Lotto 6/49',
       main: { min: 1, max: 49, count: 6 },
-      bonus: {
-        type: 'remaining_main',
+      drawBonus: {
         count: 1,
         labelKey: 'bonus'
       },
       ballStyle: 'canada',
       rulesText: {
-        en: 'Classic Draw: 6 distinct main numbers from 1 to 49 and 1 bonus ball from the remaining 43. The lottery automatically assigns a 10-digit number for the separate Gold Ball Draw.',
-        ko: 'Classic Draw에서는 1~49 중 본번호 6개를 중복 없이 뽑고, 남은 43개 중 보너스 번호 1개를 뽑습니다. 별도 Gold Ball Draw의 10자리 번호는 복권 운영사가 자동으로 부여합니다.',
-        ja: 'Classic Drawでは1〜49から重複なしで本数字6個、残り43個からボーナス数字1個を抽せんします。別のGold Ball Draw用の10桁番号は運営元が自動で割り当てます。',
-        'pt-BR': 'Classic Draw: 6 números distintos de 1 a 49 e 1 bola bônus entre os 43 restantes. A loteria atribui automaticamente um número de 10 dígitos para o sorteio separado Gold Ball Draw.'
+        en: 'For the separate Gold Ball Draw, the lottery automatically assigns a 10-digit number.',
+        ko: '별도 Gold Ball Draw의 10자리 번호는 복권 운영사가 자동으로 부여합니다.',
+        ja: '別のGold Ball Draw用の10桁番号は運営元が自動で割り当てます。',
+        'pt-BR': 'A loteria atribui automaticamente um número de 10 dígitos para o sorteio separado Gold Ball Draw.'
       }
     },
     {
@@ -288,18 +261,11 @@
       name: 'Australia Oz Lotto',
       displayName: 'Oz Lotto',
       main: { min: 1, max: 47, count: 7 },
-      bonus: {
-        type: 'remaining_main',
+      drawBonus: {
         count: 3,
         labelKey: 'supplementary'
       },
-      ballStyle: 'oz-lotto',
-      rulesText: {
-        en: '7 main numbers from 1 to 47 (no replacement) + 3 supplementary balls from the remaining 40 numbers.',
-        ko: '1부터 47까지 본번호 7개 추첨 (중복 없음) + 남은 40개 중 추가 번호 3개 추첨.',
-        ja: '1〜47の中から本数字7個（重複なし）＋ 残り40個から特別数字3個を抽選。',
-        'pt-BR': '7 números principais de 1 a 47 (sem reposição) + 3 bolas suplementares do grupo restante de 40.'
-      }
+      ballStyle: 'oz-lotto'
     },
     {
       id: 'au-powerball',
@@ -313,8 +279,7 @@
       name: 'Australia Powerball',
       displayName: 'Powerball (Australia)',
       main: { min: 1, max: 35, count: 7 },
-      bonus: {
-        type: 'independent',
+      playerSelectedExtra: {
         min: 1,
         max: 20,
         count: 1,
@@ -323,7 +288,7 @@
       ballStyle: 'au-powerball',
       rulesText: {
         en: '7 main numbers from 1 to 35 (no replacement) + 1 Powerball from independent pool 1 to 20.',
-        ko: '1부터 35까지 본번호 7개 (중복 없음) + 독립 풀 1부터 20까지 파워볼 1개 추첨.',
+        ko: '1부터 35까지 본번호 7개 (중복 없음) + 독립 풀 1부터 20까지 파워볼 1개 선택.',
         ja: '1〜35の中から本数字7個（重複なし）＋ 1〜20の独立枠からパワーボール1個。',
         'pt-BR': '7 números principais de 1 a 35 (sem reposição) + 1 Powerball do grupo independente de 1 a 20.'
       }
@@ -341,11 +306,6 @@
       name: 'Brazil Mega-Sena',
       displayName: 'Mega-Sena',
       main: { min: 1, max: 60, count: 6 },
-      bonus: {
-        type: 'none',
-        count: 0,
-        labelKey: null
-      },
       ballStyle: 'megasena',
       rulesText: {
         en: 'Choose 6 to 20 numbers from 1 to 60. This generator uses the minimum 6-number entry. The draw selects 6 distinct numbers with no bonus ball.',
@@ -366,18 +326,11 @@
       name: 'Singapore TOTO',
       displayName: 'TOTO',
       main: { min: 1, max: 49, count: 6 },
-      bonus: {
-        type: 'remaining_main',
+      drawBonus: {
         count: 1,
         labelKey: 'additional'
       },
-      ballStyle: 'singapore',
-      rulesText: {
-        en: '6 main numbers from 1 to 49 (no replacement) + 1 additional ball from the remaining 43 numbers.',
-        ko: '1부터 49까지 본번호 6개 추첨 (중복 없음) + 남은 43개 중 추가 번호 1개 추첨.',
-        ja: '1〜49の中から本数字6個（重複なし）＋ 残り43個から追加数字1個を抽選。',
-        'pt-BR': '6 números principais de 1 a 49 (sem reposição) + 1 bola adicional do grupo restante de 43.'
-      }
+      ballStyle: 'singapore'
     },
     {
       id: 'za-powerball',
@@ -393,8 +346,7 @@
       name: 'South Africa PowerBall',
       displayName: 'PowerBall',
       main: { min: 1, max: 50, count: 5 },
-      bonus: {
-        type: 'independent',
+      playerSelectedExtra: {
         min: 1,
         max: 16,
         count: 1,
@@ -460,13 +412,13 @@
       toastCopiedAll: 'All numbers copied to clipboard!',
       toastCopiedLine: 'Set numbers copied to clipboard!',
       mainLabel: 'Main Numbers',
-      ruleHeading: 'Official Draw Mechanics',
+      ruleHeading: 'Ticket Selection Rules',
       pickExtra: label => `The ticket includes both the main numbers and the separate ${label} selection.`,
-      drawOnly: label => `Choose only the main numbers for the ticket. The ${label} shown in the generated set is a draw simulation.`,
+      pickMain: ({ count, min, max }) => 'Choose ' + count + ' distinct main numbers from ' + min + ' to ' + max + '.',
+      drawOnly: label => 'The lottery draws the ' + label + ' separately.',
       sourceLabel: 'Sources',
       checkedLabel: 'Checked',
       operatorRulesUnverified: 'Operator rules unverified. The number ranges come from Capitec’s ticket terms.',
-      simulatedLabel: label => `${label} (simulated)`,
       ballLabels: {
         bonus: 'Bonus',
         powerball: 'Powerball',
@@ -523,13 +475,13 @@
       toastCopiedAll: '전체 번호가 클립보드에 복사되었습니다!',
       toastCopiedLine: '해당 게임 번호가 클립보드에 복사되었습니다!',
       mainLabel: '메인 번호',
-      ruleHeading: '공식 추첨 규칙',
+      ruleHeading: '구매 번호 선택 규칙',
       pickExtra: label => `구매할 때 본번호와 별도 번호(${label})를 모두 선택합니다.`,
-      drawOnly: label => `구매할 때는 본번호만 선택합니다. 생성 결과의 ${label} 표시는 추첨을 재현한 예시입니다.`,
+      pickMain: ({ count, min, max }) => min + '~' + max + '에서 서로 다른 본번호 ' + count + '개를 선택합니다.',
+      drawOnly: label => label + '는 운영사가 추첨에서 별도로 뽑습니다.',
       sourceLabel: '출처',
       checkedLabel: '확인일',
       operatorRulesUnverified: '운영사 규칙 원문 미검증. 번호 범위는 Capitec 판매 약관에서 확인했습니다.',
-      simulatedLabel: label => `${label}(추첨 예시)`,
       ballLabels: {
         bonus: '보너스',
         powerball: '파워볼',
@@ -586,13 +538,13 @@
       toastCopiedAll: 'すべての数字がクリップボードにコピーされました！',
       toastCopiedLine: '選択した数字がクリップボードにコピーされました！',
       mainLabel: '本数字',
-      ruleHeading: '公式抽選ルール',
+      ruleHeading: '購入時の数字選択ルール',
       pickExtra: label => `購入時は本数字と別枠の数字（${label}）の両方を選びます。`,
-      drawOnly: label => `購入時に選ぶのは本数字だけです。生成結果の「${label}」は抽せんのシミュレーションです。`,
+      pickMain: ({ count, min, max }) => min + '〜' + max + 'から異なる本数字' + count + '個を選びます。',
+      drawOnly: label => '「' + label + '」は運営元が別に抽せんします。',
       sourceLabel: '出典',
       checkedLabel: '確認日',
       operatorRulesUnverified: '運営元の規則原文は未確認です。数字の範囲はCapitecの販売規約で確認しました。',
-      simulatedLabel: label => `${label}（抽せん例）`,
       ballLabels: {
         bonus: 'ボーナス数字',
         powerball: 'パワーボール',
@@ -649,13 +601,13 @@
       toastCopiedAll: 'Todos os números foram copiados para a área de transferência!',
       toastCopiedLine: 'Jogo copiado para a área de transferência!',
       mainLabel: 'Números Principais',
-      ruleHeading: 'Regras Oficiais do Sorteio',
+      ruleHeading: 'Regras de Seleção da Aposta',
       pickExtra: label => `Na aposta, escolha os números principais e também a seleção separada de ${label}.`,
-      drawOnly: label => `Na aposta, escolha apenas os números principais. O campo “${label}” no jogo gerado é uma simulação do sorteio.`,
+      pickMain: ({ count, min, max }) => 'Escolha ' + count + ' números principais distintos de ' + min + ' a ' + max + '.',
+      drawOnly: label => 'O sorteio determina separadamente os números de “' + label + '”.',
       sourceLabel: 'Fontes',
       checkedLabel: 'Data da consulta',
       operatorRulesUnverified: 'Regulamento da operadora não verificado. Os intervalos foram consultados nos termos de venda do Capitec.',
-      simulatedLabel: label => `${label} (simulação)`,
       ballLabels: {
         bonus: 'Bônus',
         powerball: 'Powerball',
@@ -719,21 +671,10 @@
     const mainDraw = drawDistinctFromPool(mainPool, game.main.count);
     const mainNumbers = mainDraw.drawn;
 
-    let bonusNumbers = [];
-    if (game.bonus.type === 'remaining_main') {
-      // Bonus numbers drawn from remaining pool of main numbers without replacement
-      const bonusDraw = drawDistinctFromPool(mainDraw.remaining, game.bonus.count);
-      bonusNumbers = bonusDraw.drawn;
-    } else if (game.bonus.type === 'independent') {
-      // Special balls drawn from independent pool [bonus.min, bonus.max] without replacement
-      const bonusPool = createRange(game.bonus.min, game.bonus.max);
-      const bonusDraw = drawDistinctFromPool(bonusPool, game.bonus.count);
-      bonusNumbers = bonusDraw.drawn;
-    }
-
+    const extra = game.playerSelectedExtra;
     return {
       main: mainNumbers,
-      bonus: bonusNumbers
+      bonus: extra ? drawDistinctFromPool(createRange(extra.min, extra.max), extra.count).drawn : []
     };
   }
 
@@ -899,11 +840,12 @@
   }
 
   function updateRules(game, lang, t) {
-    const { bonus, rulesReview } = game;
-    const label = t.ballLabels[bonus.labelKey];
-    const paragraphs = [game.rulesText[lang] || game.rulesText.en];
-    if (bonus.type === 'independent') paragraphs.push(t.pickExtra(label));
-    if (bonus.type === 'remaining_main') paragraphs.push(t.drawOnly(label));
+    const { playerSelectedExtra, drawBonus, rulesReview } = game;
+    const paragraphs = [];
+    if (drawBonus) paragraphs.push(t.pickMain(game.main));
+    if (game.rulesText) paragraphs.push(game.rulesText[lang] || game.rulesText.en);
+    if (playerSelectedExtra) paragraphs.push(t.pickExtra(t.ballLabels[playerSelectedExtra.labelKey]));
+    if (drawBonus) paragraphs.push(t.drawOnly(t.ballLabels[drawBonus.labelKey]));
     if (rulesReview.operatorRulesUnverified) paragraphs.push(t.operatorRulesUnverified);
     ruleText.textContent = paragraphs.join(' ');
 
@@ -926,8 +868,8 @@
   }
 
   function getExtraLabel(game, t) {
-    const label = t.ballLabels[game.bonus.labelKey];
-    return game.bonus.type === 'remaining_main' ? t.simulatedLabel(label || t.ballLabels.bonus) : label || t.ballLabels.bonus;
+    const extra = game.playerSelectedExtra || (game.bonus?.type === 'independent' ? game.bonus : null);
+    return extra ? t.ballLabels[extra.labelKey] || t.ballLabels.bonus : '';
   }
 
   const SAVED_LIMIT = 100;
@@ -952,7 +894,10 @@
       rules: {
         displayName: game.displayName,
         main: { ...game.main },
-        bonus: { ...game.bonus }
+        // Keep the existing storage format for ticket snapshots.
+        bonus: game.playerSelectedExtra
+          ? { ...game.playerSelectedExtra, type: 'independent' }
+          : { type: 'none', count: 0, labelKey: null }
       }
     };
   }
@@ -1109,10 +1054,11 @@
     heading.textContent = `${country?.name || record.countryId} · ${record.rules.displayName}`;
     const numbers = document.createElement('p');
     numbers.textContent = `${t.mainLabel} · ${record.main.join(', ')}`;
-    if (record.bonus.length) {
+    const extraLabel = getExtraLabel(record.rules, t);
+    if (extraLabel && record.bonus.length) {
       const extra = document.createElement('span');
       extra.className = 'saved-extra';
-      extra.textContent = `${getExtraLabel(record.rules, t)} · ${record.bonus.join(', ')}`;
+      extra.textContent = `${extraLabel} · ${record.bonus.join(', ')}`;
       numbers.append(extra);
     }
     const dates = document.createElement('p');
@@ -1277,8 +1223,8 @@
       });
       ballsWrapper.appendChild(mainGroup);
 
-      // Bonus / Supplementary balls group if applicable
-      if (set.bonus && set.bonus.length > 0) {
+      // Separate numbers selected on the ticket.
+      if (bonusLabelText && set.bonus.length) {
         const divider = document.createElement('span');
         divider.className = 'bonus-divider';
         divider.textContent = '+';
@@ -1444,8 +1390,8 @@
     }
 
     const mainStr = set.main.join(', ');
-    if (set.bonus && set.bonus.length > 0) {
-      const bLabel = getExtraLabel(game, t);
+    const bLabel = getExtraLabel(game, t);
+    if (bLabel && set.bonus.length) {
       const bonusStr = set.bonus.join(', ');
       return `${prefix}${mainStr} + [${bLabel}: ${bonusStr}]`;
     }

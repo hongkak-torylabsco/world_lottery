@@ -55,7 +55,7 @@ function buildEntry(game, source, draws, through, updated, weekdays) {
   }
   const changed = game.id === 'us-megamillions';
   const current = summarize(draws.filter(row => !changed || row.date >= migration), game);
-  const legacyRule = { ...game, bonus: { ...game.bonus, max: 25 } };
+  const legacyRule = { ...game, playerSelectedExtra: { ...game.playerSelectedExtra, max: 25 } };
   const legacy = changed ? summarize(draws.filter(row => row.date < migration), legacyRule) : null;
   return { status: current ? 'verified' : 'pending', source, updated, through,
     windowStart: start, current, previous: legacy ? [{ ...legacy, rule: '5/70 + 1/25' }] : [] };

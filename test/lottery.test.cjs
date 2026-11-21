@@ -5,36 +5,35 @@ const { choose, sampleLines, uniqueTickets, jackpotOdds, rankings, summarize } =
 const { buildEntry, fiveYearsBefore } = require('../scripts/update-draws.cjs');
 
 const expected = {
-  'kr-lotto-645': [45, 6, 45, 1, 8145060n],
+  'kr-lotto-645': [45, 6, 0, 0, 8145060n],
   'us-powerball': [69, 5, 26, 1, 292201338n],
   'us-megamillions': [70, 5, 24, 1, 290472336n],
-  'uk-lotto': [59, 6, 59, 1, 45057474n],
+  'uk-lotto': [59, 6, 0, 0, 45057474n],
   'eu-euromillions': [50, 5, 12, 2, 139838160n],
   'eu-eurojackpot': [50, 5, 12, 2, 139838160n],
-  'jp-loto-6': [43, 6, 43, 1, 6096454n],
-  'jp-loto-7': [37, 7, 37, 2, 10295472n],
-  'ca-lotto-649': [49, 6, 49, 1, 13983816n],
-  'au-oz-lotto': [47, 7, 47, 3, 62891499n],
+  'jp-loto-6': [43, 6, 0, 0, 6096454n],
+  'jp-loto-7': [37, 7, 0, 0, 10295472n],
+  'ca-lotto-649': [49, 6, 0, 0, 13983816n],
+  'au-oz-lotto': [47, 7, 0, 0, 62891499n],
   'au-powerball': [35, 7, 20, 1, 134490400n],
   'br-mega-sena': [60, 6, 0, 0, 50063860n],
-  'sg-toto': [49, 6, 49, 1, 13983816n],
+  'sg-toto': [49, 6, 0, 0, 13983816n],
   'za-powerball': [50, 5, 16, 1, 33900160n]
 };
 
 test('all 14 games preserve number ranges, match rules and batch uniqueness', () => {
   assert.equal(GAMES.length, Object.keys(expected).length);
   for (const game of GAMES) {
-    const [mainMax, mainCount, bonusMax, bonusCount, space] = expected[game.id];
+    const [mainMax, mainCount, extraMax, extraCount, space] = expected[game.id];
     for (const count of [1, 3, 5, 10]) {
       const lines = generateBatch(game, count);
       assert.equal(new Set(lines.map(line => JSON.stringify(line))).size, count);
       for (const line of [...lines, generateGameLine(game)]) {
-        for (const [values, max, length] of [[line.main, mainMax, mainCount], [line.bonus, bonusMax, bonusCount]]) {
+        for (const [values, max, length] of [[line.main, mainMax, mainCount], [line.bonus, extraMax, extraCount]]) {
           assert.equal(values.length, length, game.id);
           assert.deepEqual(values, [...new Set(values)].sort((a, b) => a - b));
           assert.ok(values.every(n => Number.isInteger(n) && n >= 1 && n <= max));
         }
-        if (mainMax === bonusMax) assert.ok(line.bonus.every(n => !line.main.includes(n)));
       }
       const n = BigInt(count);
       assert.deepEqual(jackpotOdds(game, count), game.id === 'uk-lotto'
@@ -46,13 +45,14 @@ test('all 14 games preserve number ranges, match rules and batch uniqueness', ()
 });
 
 test('sampling exhausts a small pool even with repeated random indexes', () => {
-  const game = { main: { min: 1, max: 3, count: 2 }, bonus: { type: 'remaining_main', count: 1 } };
+  const game = { main: { min: 1, max: 3, count: 2 }, drawBonus: { count: 1 } };
   assert.equal(new Set(sampleLines(game, 3, () => 0).map(line => JSON.stringify(line))).size, 3);
+  assert.deepEqual(sampleLines(game, 3, () => 0).map(line => line.bonus), [[], [], []]);
   for (const count of [0, 4, 1.5]) assert.throws(() => sampleLines(game, count, () => 0), RangeError);
   assert.throws(() => jackpotOdds(game, 4), RangeError);
   const variants = [{ main: [2, 1], bonus: [2] }, { main: [1, 2], bonus: [3] }];
   assert.equal(uniqueTickets(game, variants), 1);
-  assert.equal(uniqueTickets({ ...game, bonus: { type: 'independent' } }, variants), 2);
+  assert.equal(uniqueTickets({ ...game, playerSelectedExtra: { min: 1, max: 3, count: 1 } }, variants), 2);
 });
 
 test('official snapshot totals and tie-breaks are reproducible', () => {
@@ -88,7 +88,7 @@ test('legacy records use their own rule snapshot and unchanged data fields', () 
   const record = {
     id: 'old-id', countryId: 'US', gameId: game.id, createdAt: 1710000000000,
     main: [1, 7, 8, 9, 10], bonus: [25],
-    rules: { displayName: game.displayName, main: game.main, bonus: { ...game.bonus, max: 25 } }
+    rules: { displayName: game.displayName, main: game.main, bonus: { ...game.playerSelectedExtra, type: 'independent', max: 25 } }
   };
   assert.ok(validRecord(record, 'history'));
   assert.ok(validRecord({ ...record, favoritedAt: record.createdAt }, 'favorites'));

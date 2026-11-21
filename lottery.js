@@ -15,14 +15,15 @@
     return Array.from({ length: pool.max - pool.min + 1 }, (_, i) => pool.min + i);
   }
 
-  function bonusPool(game) {
-    if (game.bonus.type === 'remaining_main') return { ...game.main, count: game.bonus.count };
-    return game.bonus.type === 'independent' ? game.bonus : null;
+  function drawExtraPool(rule) {
+    const drawBonus = rule.drawBonus || (rule.bonus?.type === 'remaining_main' ? rule.bonus : null);
+    return drawBonus ? { ...rule.main, count: drawBonus.count } : rule.playerSelectedExtra || (rule.bonus?.type === 'independent' ? rule.bonus : null);
   }
 
   function jackpotSpace(game) {
     const main = choose(range(game.main).length, game.main.count);
-    return game.bonus.type === 'independent' ? main * choose(range(game.bonus).length, game.bonus.count) : main;
+    const extra = game.playerSelectedExtra;
+    return extra ? main * choose(range(extra).length, extra.count) : main;
   }
 
   function jackpotOdds(game, count) {
@@ -41,7 +42,7 @@
 
   function uniqueTickets(game, lines) {
     return new Set(lines.map(line => numberKey(line.main) +
-      (game.bonus.type === 'independent' ? '|' + numberKey(line.bonus) : ''))).size;
+      (game.playerSelectedExtra ? '|' + numberKey(line.bonus) : ''))).size;
   }
 
   function unrank(pool, count, rank) {
@@ -60,11 +61,10 @@
 
   function sampleLines(game, count, randomInt) {
     const mainPool = range(game.main);
-    const extraRule = bonusPool(game);
+    const extraRule = game.playerSelectedExtra;
     const extraPool = extraRule ? range(extraRule) : [];
     const extraCount = extraRule?.count || 0;
-    const remaining = game.bonus.type === 'remaining_main';
-    const extras = choose(extraPool.length - (remaining ? game.main.count : 0), extraCount);
+    const extras = choose(extraPool.length, extraCount);
     const size = Number(choose(mainPool.length, game.main.count) * extras);
     if (!Number.isSafeInteger(size) ||
         !Number.isSafeInteger(count) || count < 1 || count > size) throw new RangeError('Invalid batch size');
@@ -89,8 +89,7 @@
       swaps.set(selected, swaps.get(last) ?? last);
       swaps.delete(last);
       const main = unrank(mainPool, game.main.count, rank / extras);
-      const pool = remaining ? extraPool.filter(number => !main.includes(number)) : extraPool;
-      lines.push({ main, bonus: unrank(pool, extraCount, rank % extras) });
+      lines.push({ main, bonus: unrank(extraPool, extraCount, rank % extras) });
     }
     return lines;
   }
@@ -102,14 +101,14 @@
 
   function summarize(draws, rule) {
     if (!draws.length) return null;
-    const extra = bonusPool(rule);
+    const extra = drawExtraPool(rule);
     const main = range(rule.main).map(number => ({ number, count: 0 }));
     const bonus = extra ? range(extra).map(number => ({ number, count: 0 })) : null;
     const dates = new Set();
     for (const draw of draws) {
       if (dates.has(draw.date) || !validNumbers(draw.main, rule.main) ||
           !validNumbers(draw.bonus, extra || { count: 0 }) ||
-          (rule.bonus.type === 'remaining_main' && draw.bonus.some(n => draw.main.includes(n)))) {
+          ((rule.drawBonus || rule.bonus?.type === 'remaining_main') && draw.bonus.some(n => draw.main.includes(n)))) {
         throw new Error('Invalid or duplicate draw ' + draw.date);
       }
       dates.add(draw.date);
@@ -284,7 +283,7 @@
       const renderPeriod = (period, parent) => {
         element('h3', (period.rule ? period.rule + ' ? ' : '') + date(period.start) + ' – ' + date(period.end) + ' · ' + t.draws + ' ' + period.count, parent);
         renderPool(parent, mainLabel, period.main, t.frequency);
-        if (period.bonus) renderPool(parent, ballLabels[game.bonus.labelKey], period.bonus, t.frequency);
+        if (period.bonus) renderPool(parent, ballLabels[(game.playerSelectedExtra || game.drawBonus)?.labelKey], period.bonus, t.frequency);
       };
       renderPeriod(entry.current, content);
       if (entry.previous?.length) {
