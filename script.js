@@ -1426,7 +1426,7 @@
     }
     const controls = document.createElement('div');
     controls.className = 'saved-actions';
-    controls.append(createFavoriteButton(record));
+    controls.append(createFavoriteButton(record), ...createExportButtons(record, t));
     if (isHistory) {
       const remove = document.createElement('button');
       remove.className = 'saved-button';
@@ -1547,7 +1547,7 @@
       headerDiv.appendChild(titleSpan);
       const actions = document.createElement('div');
       actions.className = 'saved-actions';
-      actions.append(createFavoriteButton(set), copyBtn);
+      actions.append(createFavoriteButton(set), copyBtn, ...createExportButtons(set, t));
       headerDiv.appendChild(actions);
       row.appendChild(headerDiv);
 
@@ -1692,6 +1692,200 @@
 
     const copied = await copyText(lines.join('\n'));
     showToast(copied ? t.toastCopiedAll : t.toastCopyFailed);
+  }
+
+  const EXPORT_SITE = 'https://world-lottery.pages.dev/';
+  const EXPORT_FONTS = {
+    ko: '"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", sans-serif',
+    ja: '"Yu Gothic", Meiryo, "Hiragino Sans", "Noto Sans CJK JP", sans-serif',
+    en: 'system-ui, sans-serif',
+    'pt-BR': 'system-ui, sans-serif'
+  };
+  const EXPORT_LABELS = {
+    ko: {
+      save: '이미지 저장', share: '번호 공유', canceled: '공유를 취소했습니다.',
+      shareFailed: '번호를 공유하지 못했습니다.', generating: '이미지를 생성하는 중입니다.',
+      saveFailed: '이미지를 저장하지 못했습니다.', unavailable: '공유 기능을 사용할 수 없습니다.',
+      copy: '텍스트 복사', saved: 'PNG 다운로드를 시작했습니다.'
+    },
+    en: {
+      save: 'Save image', share: 'Share numbers', canceled: 'Sharing canceled.',
+      shareFailed: 'Unable to share the numbers.', generating: 'Creating the image…',
+      saveFailed: 'Unable to save the image.', unavailable: 'Sharing is unavailable.',
+      copy: 'Copy text', saved: 'PNG download started.'
+    },
+    ja: {
+      save: '画像を保存', share: '数字を共有', canceled: '共有をキャンセルしました。',
+      shareFailed: '数字を共有できませんでした。', generating: '画像を作成しています。',
+      saveFailed: '画像を保存できませんでした。', unavailable: '共有機能を利用できません。',
+      copy: 'テキストをコピー', saved: 'PNGのダウンロードを開始しました。'
+    },
+    'pt-BR': {
+      save: 'Salvar imagem', share: 'Compartilhar números', canceled: 'Compartilhamento cancelado.',
+      shareFailed: 'Não foi possível compartilhar os números.', generating: 'Gerando imagem…',
+      saveFailed: 'Não foi possível salvar a imagem.', unavailable: 'O compartilhamento está indisponível.',
+      copy: 'Copiar texto', saved: 'Download do PNG iniciado.'
+    }
+  };
+
+  function createExportButtons(record, t) {
+    const lang = getCurrentCountry().lang;
+    const labels = EXPORT_LABELS[lang];
+    const name = record.rules.displayName;
+    const extra = record.bonus.length ? getExtraLabel(record.rules, t) : '';
+    const text = [name, `${t.mainLabel}: ${record.main.join(', ')}`];
+    if (extra) text.push(`${extra}: ${record.bonus.join(', ')}`);
+    const share = { title: name, text: text.join('\n'), url: EXPORT_SITE };
+    const fileDate = new Date(record.createdAt).toISOString().split('T')[0].replace(/-/g, '');
+    const fileSlug = record.gameId.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 70);
+    const filename = `world-lottery-${fileSlug || 'numbers'}-${fileDate}.png`;
+    const copyShareText = async () => {
+      const copied = await copyText(`${share.text}\n${share.url}`);
+      showToast(copied ? t.toastCopiedLine : t.toastCopyFailed);
+    };
+    const button = (label, task, download = false) => {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.className = 'btn-copy-line';
+      control.setAttribute('aria-label', `${label} · ${name} · ${record.main.join(', ')}`);
+      if (download) {
+        control.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M11 3h2v10l4-4 1.4 1.4L12 17l-6.4-6.6L7 9l4 4V3zM4 18h2v2h12v-2h2v4H4z"/></svg>';
+      }
+      control.append(label);
+      control.addEventListener('click', async () => {
+        if (control.getAttribute('aria-busy') === 'true') return;
+        control.setAttribute('aria-busy', 'true');
+        try {
+          await task();
+        } finally {
+          control.removeAttribute('aria-busy');
+        }
+      });
+      return control;
+    };
+
+    const saveButton = button(labels.save, async () => {
+      announce(labels.generating);
+      try {
+        await document.fonts?.ready;
+        const canvas = drawExportImage(record, lang, t.mainLabel, extra);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        if (!blob) throw new Error('PNG encoding failed');
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.append(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 30000);
+        }
+        showToast(labels.saved);
+      } catch {
+        showToast(labels.saveFailed);
+      } finally {
+        announce('');
+      }
+    }, true);
+
+    const shareButton = button(labels.share, async () => {
+      announce('');
+      if (typeof navigator.share !== 'function') {
+        announce(labels.unavailable);
+        await copyShareText();
+        return;
+      }
+      let payload = share;
+      if (typeof navigator.canShare === 'function' && document.fonts?.status === 'loaded') {
+        try {
+          // Encode synchronously to keep the original click's transient activation.
+          const canvas = drawExportImage(record, lang, t.mainLabel, extra);
+          const encoded = canvas.toDataURL('image/png').split(',')[1];
+          const bytes = Uint8Array.from(atob(encoded), char => char.charCodeAt(0));
+          const filePayload = { ...share, files: [new File([bytes], filename, { type: 'image/png' })] };
+          if (navigator.canShare(filePayload)) payload = filePayload;
+        } catch {
+          // The text payload remains available when file encoding or validation fails.
+        }
+      }
+      try {
+        await navigator.share(payload);
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          announce(labels.canceled);
+        } else {
+          showToast(labels.shareFailed);
+        }
+      }
+    });
+
+    const buttons = [saveButton, shareButton];
+    if (typeof navigator.share !== 'function') buttons.push(button(labels.copy, copyShareText));
+    return buttons;
+  }
+
+  function drawExportImage(record, lang, mainLabel, extraLabel) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 630;
+    canvas.lang = lang;
+    const ctx = canvas.getContext('2d');
+    const country = COUNTRIES.find(entry => entry.id === record.countryId);
+    const game = GAMES.find(entry => entry.id === record.gameId);
+    const font = EXPORT_FONTS[lang];
+    const text = (value, x, y, size, color, maxWidth, weight = 700) => {
+      ctx.font = `${weight} ${size}px ${font}`;
+      ctx.fillStyle = color;
+      ctx.fillText(value, x, y, maxWidth);
+    };
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 1200, 630);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(32, 32, 1136, 566);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(32, 32, 1136, 6);
+    text('World Lottery Number Generator', 72, 105, 28, '#bae6fd', 1056);
+    text(country?.name || record.countryId, 72, 159, 27, '#cbd5e1', 1056, 500);
+    text(record.rules.displayName, 72, 229, 52, '#ffffff', 1056);
+
+    const swatch = document.createElement('span');
+    swatch.hidden = true;
+    document.body.append(swatch);
+    const drawNumbers = (numbers, label, x, width, isBonus) => {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(x, 272, width, 220);
+      text(label, x + 22, 320, 26, '#e2e8f0', width - 44);
+      const step = Math.min(114, (width - 36) / Math.max(1, numbers.length));
+      const radius = Math.min(42, step * 0.43);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      numbers.forEach((number, index) => {
+        swatch.className = getBallClass(number, game?.ballStyle, isBonus);
+        const background = getComputedStyle(swatch).backgroundImage;
+        const center = x + 18 + (index + 0.5) * step;
+        ctx.fillStyle = background.match(/rgba?\([^)]+\)/)?.[0] || '#e2e8f0';
+        ctx.beginPath();
+        ctx.arc(center, 410, radius, 0, 2 * Math.PI);
+        ctx.fill();
+        text(String(number), center, 410, Math.min(34, radius), '#0f172a', radius * 1.65);
+      });
+      ctx.textAlign = 'start';
+      ctx.textBaseline = 'alphabetic';
+    };
+    try {
+      drawNumbers(record.main, mainLabel, 72, extraLabel ? 730 : 1056, false);
+      if (extraLabel) drawNumbers(record.bonus, extraLabel, 822, 306, true);
+    } finally {
+      swatch.remove();
+    }
+    const date = new Intl.DateTimeFormat(lang, { dateStyle: 'long' }).format(record.createdAt);
+    text(date, 72, 557, 24, '#cbd5e1', 500, 500);
+    ctx.textAlign = 'right';
+    text(new URL(EXPORT_SITE).hostname, 1128, 557, 25, '#bae6fd', 500);
+    return canvas;
   }
 
   async function copyText(text) {
