@@ -11,6 +11,8 @@
 
 브라우저는 같은 출처의 `POST /api/v1/generate`에 게임 ID, 수량, 모드를 보냅니다. 공개 Pages Function인 `functions/api/v1/generate.js`는 `ENGINE` 서비스 바인딩으로 요청을 전달합니다. `_routes.json`은 API 경로에만 Function을 연결하므로 사이트 파일과 집계 JSON은 정적으로 제공됩니다. 응답의 `main`과 `extra`는 기존 기록 구조에 맞춰 저장합니다.
 
+v1.4.x의 한국 생성기와 원본 이력 경로에는 캐시 교체용 안내 파일을 배포합니다. 두 파일에는 이전 코드나 회차 데이터가 들어 있지 않습니다.
+
 - 공개 저장소의 정적 업로드는 `node scripts/build-pages.cjs`가 만든 임시 디렉터리를 사용합니다. 업로드 파일은 HTML, CSS, 공개 JS, AdSense·SEO 파일, 집계 JSON 및 라우팅 설정입니다. 미국 원본 추첨 JSON과 검증 스크립트는 오프라인 갱신용입니다.
 - 별도 로컬 프로젝트 `../world-lottery-engine`의 `worker.mjs`가 API를 처리합니다. `engine.cjs`, `lottery.js`, `korea-lotto.js`, `games.json`, `data/kr-lotto645.json`은 Worker 번들 안에만 들어갑니다. Wrangler 설정, 가져오기·집계 스크립트와 엔진 테스트도 별도 프로젝트에 있습니다.
 - 한국 Lotto의 회차별 추첨 데이터는 검증 후 Worker 빌드에 포함합니다. 공개 `data/analysis.json`에는 한국 및 미국 통계와 출처·기간 정보가 들어갑니다. 한국 데이터를 갱신할 때는 비공개 프로젝트에서 CSV를 가져오고 테스트한 뒤 `node scripts/export-summary.cjs`로 한국 집계 항목을 내보냅니다. 공개 JSON의 `kr-lotto-645` 항목만 교체하고 Worker와 집계 데이터의 기준일이 맞는지 확인합니다.

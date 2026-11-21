@@ -9,9 +9,11 @@ test('Pages artifacts contain public assets, preserve SEO, and exclude the engin
   try {
     assert.deepEqual(readdirSync(output).sort(), [
       '_routes.json', 'about.html', 'ads.txt', 'contact.html', 'data', 'guide.html',
-      'index.html', 'lottery.js', 'privacy.html', 'robots.txt', 'script.js', 'sitemap.xml', 'style.css'
+      'index.html', 'korea-lotto.js', 'lottery.js', 'privacy.html', 'robots.txt', 'script.js', 'sitemap.xml', 'style.css'
     ]);
-    assert.deepEqual(readdirSync(join(output, 'data')), ['analysis.json']);
+    assert.deepEqual(readdirSync(join(output, 'data')).sort(), ['analysis.json', 'kr-lotto645.json']);
+    assert.equal(readFileSync(join(output, 'korea-lotto.js'), 'utf8'), '// Korea Lotto generation moved to the API.\n');
+    assert.deepEqual(JSON.parse(readFileSync(join(output, 'data', 'kr-lotto645.json'))), { moved: true });
     for (const file of ['index.html', 'script.js', 'lottery.js', 'data/analysis.json']) {
       assert.doesNotMatch(readFileSync(join(output, file), 'utf8'),
         /\b(?:sampleLines|unrank|createRandomInt|replaceNumbers|generateFiltered|prepareSnapshot)\b|korea-lotto\.js|kr-lotto645\.json|api[_-]?key|sourceMappingURL/i);

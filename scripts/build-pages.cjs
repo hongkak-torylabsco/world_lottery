@@ -13,6 +13,9 @@ function buildPages() {
   const output = mkdtempSync(join(tmpdir(), 'world-lottery-pages-'));
   mkdirSync(join(output, 'data'));
   for (const file of files) copyFileSync(join(root, file), join(output, file));
+  // Replace cached v1.4.x URLs with inert content during migration.
+  writeFileSync(join(output, 'korea-lotto.js'), '// Korea Lotto generation moved to the API.\n');
+  writeFileSync(join(output, 'data', 'kr-lotto645.json'), '{"moved":true}\n');
   writeFileSync(join(output, '_routes.json'), JSON.stringify({
     version: 1,
     include: ['/api/v1/generate'],
