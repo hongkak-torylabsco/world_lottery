@@ -8,7 +8,7 @@
   <link rel="canonical" href="https://world-lottery.pages.dev/">
   <meta name="robots" content="index, follow">
   <meta name="google-site-verification" content="kmjcMP67CKmmbHJto5JpYwlrn7U06piNpAucFjbxHxY" />
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=1.9.0">
 <script async
   src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6823137045833733"
   crossorigin="anonymous"></script>
@@ -78,12 +78,23 @@
             </div>
           </form>
 
-          <fieldset id="korea-mode-panel" class="form-group korea-mode" hidden>
+          <fieldset id="korea-mode-panel" class="form-group korea-mode" aria-describedby="korea-mode-note" hidden>
             <legend id="korea-mode-label" class="form-label">생성 방식</legend>
             <div class="korea-mode-options">
-              <label><input type="radio" name="korea-mode" value="filtered"> <span>최근 당첨번호 유사 조합 제외</span></label>
-              <label><input type="radio" name="korea-mode" value="random"> <span>일반 무작위 생성</span></label>
+              <label>
+                <input type="radio" name="korea-mode" value="random" aria-labelledby="korea-random-label" aria-describedby="korea-random-description">
+                <span><strong id="korea-random-label">균등 무작위 (권장)</strong><small id="korea-random-description">모든 유효한 번호 조합을 동일한 확률로 생성합니다.</small></span>
+              </label>
+              <label>
+                <input type="radio" name="korea-mode" value="statistical" aria-labelledby="korea-statistical-label" aria-describedby="korea-statistical-description" checked>
+                <span><strong id="korea-statistical-label">통계 조건 적용</strong><small id="korea-statistical-description">홀짝 비율, 번호 합계, 저번호 개수 조건을 만족하는 조합을 생성합니다.</small></span>
+              </label>
+              <label>
+                <input type="radio" name="korea-mode" value="filtered" aria-labelledby="korea-filtered-label" aria-describedby="korea-filtered-description">
+                <span><strong id="korea-filtered-label">과거 당첨번호 비교</strong><small id="korea-filtered-description">과거 당첨번호와 5개 이상 겹치는 조합을 제한합니다.</small></span>
+              </label>
             </div>
+            <p id="korea-mode-note">어떤 생성 방식도 로또 당첨 확률을 높이지 않습니다.</p>
           </fieldset>
 
           <!-- Action buttons -->
@@ -178,6 +189,6 @@
   <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
 
   <script src="lottery.js" defer></script>
-  <script src="script.js?v=2" defer></script>
+  <script src="script.js?v=1.9.0" defer></script>
 </body>
 </html>

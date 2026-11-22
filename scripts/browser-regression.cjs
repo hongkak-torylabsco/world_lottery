@@ -310,7 +310,12 @@ async function check(browser, url) {
     change('country-select', 'KR');
     const mode = value => panel.querySelector('input[value="' + value + '"]');
     const defaultMode = panel.querySelector('input:checked')?.value ?? null;
-    const overrides = panel.querySelectorAll('input[type=radio]').length;
+    const modeCopy = Array.from(panel.querySelectorAll('input[type=radio]'), input => [
+      input.value,
+      document.getElementById(input.getAttribute('aria-labelledby')).textContent,
+      document.getElementById(input.getAttribute('aria-describedby')).textContent
+    ]);
+    const note = document.getElementById('korea-mode-note').textContent;
     change('quantity-select', '1');
     await generateAndWait();
     const defaultRequest = generationRequests.at(-1).mode;
@@ -336,19 +341,24 @@ async function check(browser, url) {
       }
       counts.push(document.querySelectorAll('.result-row').length);
     }
-    return { hiddenOutsideKorea, defaultMode, defaultRequest, defaultNumbers, overrides,
+    return { hiddenOutsideKorea, defaultMode, defaultRequest, defaultNumbers, modeCopy, note,
       enabled: !mode('filtered').disabled, counts, randomNumbers, randomMode,
       results: document.getElementById('draw-analysis').innerText };
   });
   assert.ok(korean.hiddenOutsideKorea && korean.enabled);
-  assert.equal(korean.defaultMode, null);
+  assert.equal(korean.defaultMode, 'statistical');
   assert.equal(korean.defaultRequest, 'kr-statistical');
   assert.equal(korean.defaultNumbers.length, 6);
   assert.equal(new Set(korean.defaultNumbers).size, 6);
   assert.ok(korean.defaultNumbers.every(n => Number.isInteger(n) && n >= 1 && n <= 45));
   assert.equal(korean.randomMode, 'random');
   assert.deepEqual(korean.counts, [1, 3, 5, 10]);
-  assert.equal(korean.overrides, 2);
+  assert.deepEqual(korean.modeCopy, [
+    ['random', '균등 무작위 (권장)', '모든 유효한 번호 조합을 동일한 확률로 생성합니다.'],
+    ['statistical', '통계 조건 적용', '홀짝 비율, 번호 합계, 저번호 개수 조건을 만족하는 조합을 생성합니다.'],
+    ['filtered', '과거 당첨번호 비교', '과거 당첨번호와 5개 이상 겹치는 조합을 제한합니다.']
+  ]);
+  assert.equal(korean.note, '어떤 생성 방식도 로또 당첨 확률을 높이지 않습니다.');
   assert.equal(korean.randomNumbers, 6);
   assert.match(korean.results, /COLD.*43 \(22\)/);
   console.log('Korea default statistical tickets and both existing overrides OK');
@@ -385,7 +395,7 @@ async function check(browser, url) {
     rows: 0, recovered: true });
   console.log('API loading, duplicate-click prevention, localized errors and stale requests OK');
 
-  for (const mode of ['random', 'filtered']) {
+  for (const mode of ['random', 'filtered', 'statistical']) {
     await evalPage(`(() => {
       const country = document.getElementById('country-select');
       country.value = 'KR';
@@ -399,7 +409,7 @@ async function check(browser, url) {
     }
     assert.equal(await evalPage("document.querySelector('input[name=korea-mode]:checked')?.value"), mode);
   }
-  console.log('Explicit choices for both Korea modes survive reload');
+  console.log('Explicit choices for all three Korea modes survive reload');
 
   if (['127.0.0.1', 'localhost'].includes(new URL(url).hostname)) {
     for (const legacyPath of ['/qa', '/qa/', '/qa.html']) {
