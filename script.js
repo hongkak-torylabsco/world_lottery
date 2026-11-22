@@ -1218,16 +1218,32 @@
 
   const koreaModeLabels = {
     ko: {
-      title: '생성 방식', random: '일반 무작위 생성', filtered: '최근 당첨번호 유사 조합 제외'
+      title: '생성 방식',
+      random: ['균등 무작위 (권장)', '모든 유효한 번호 조합을 동일한 확률로 생성합니다.'],
+      statistical: ['통계 조건 적용', '홀짝 비율, 번호 합계, 저번호 개수 조건을 만족하는 조합을 생성합니다.'],
+      filtered: ['과거 당첨번호 비교', '과거 당첨번호와 5개 이상 겹치는 조합을 제한합니다.'],
+      note: '어떤 생성 방식도 로또 당첨 확률을 높이지 않습니다.'
     },
     en: {
-      title: 'Generation mode', random: 'Uniform random', filtered: 'Exclude combinations similar to past draws'
+      title: 'Generation mode',
+      random: ['Uniform random (recommended)', 'Generates every valid number combination with equal probability.'],
+      statistical: ['Apply statistical conditions', 'Generates combinations that meet conditions for odd and even counts, total sum, and low-number count.'],
+      filtered: ['Compare with past winning numbers', 'Restricts combinations that share five or more numbers with a past draw.'],
+      note: 'No generation mode increases your chances of winning the lottery.'
     },
     ja: {
-      title: '生成方式', random: '一様なランダム生成', filtered: '過去の当せん数字に近い組み合わせを除外'
+      title: '生成方式',
+      random: ['一様なランダム生成（推奨）', '有効な数字の組み合わせをすべて同じ確率で生成します。'],
+      statistical: ['統計条件を適用', '奇数と偶数の比率、数字の合計、小さい数字の個数の条件を満たす組み合わせを生成します。'],
+      filtered: ['過去の当せん数字と比較', '過去の当せん数字と5個以上重複する組み合わせを制限します。'],
+      note: 'どの生成方式でも、ロトの当せん確率は上がりません。'
     },
     'pt-BR': {
-      title: 'Modo de geração', random: 'Geração aleatória uniforme', filtered: 'Excluir combinações semelhantes a sorteios anteriores'
+      title: 'Modo de geração',
+      random: ['Geração aleatória uniforme (recomendada)', 'Gera todas as combinações válidas de números com a mesma probabilidade.'],
+      statistical: ['Aplicar critérios estatísticos', 'Gera combinações que atendem a critérios de paridade, soma e quantidade de números baixos.'],
+      filtered: ['Comparar com resultados anteriores', 'Restringe combinações com cinco ou mais números em comum com um sorteio anterior.'],
+      note: 'Nenhum modo de geração aumenta as chances de ganhar na loteria.'
     }
   };
 
@@ -1236,10 +1252,13 @@
     panel.hidden = game.id !== koreaGameId;
     if (panel.hidden) return;
 
-    const labels = koreaModeLabels[lang];
+    const labels = koreaModeLabels[lang] || koreaModeLabels.en;
     document.getElementById('korea-mode-label').textContent = labels.title;
+    document.getElementById('korea-mode-note').textContent = labels.note;
     for (const option of panel.querySelectorAll('input[name="korea-mode"]')) {
-      option.nextElementSibling.textContent = labels[option.value];
+      const [title, description] = labels[option.value];
+      document.getElementById(option.getAttribute('aria-labelledby')).textContent = title;
+      document.getElementById(option.getAttribute('aria-describedby')).textContent = description;
     }
   }
 
@@ -1251,7 +1270,8 @@
     } catch {
       // Use the default when browser storage is unavailable.
     }
-    for (const option of options) option.checked = option.value === saved;
+    const selected = saved === 'random' || saved === 'filtered' ? saved : 'statistical';
+    for (const option of options) option.checked = option.value === selected;
   }
 
   // 10. Draw Action
