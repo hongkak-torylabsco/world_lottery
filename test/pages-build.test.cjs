@@ -8,10 +8,19 @@ test('Pages artifacts contain public assets, preserve SEO, and exclude the engin
   const output = buildPages();
   try {
     assert.deepEqual(readdirSync(output).sort(), [
-      '_routes.json', 'about.html', 'ads.txt', 'contact.html', 'data', 'guide.html',
-      'index.html', 'korea-lotto.js', 'lottery.js', 'privacy.html', 'robots.txt', 'script.js', 'sitemap.xml', 'style.css'
+      '_routes.json', 'about.html', 'admin-feedback.js', 'ads.txt', 'contact.html', 'contact.js',
+      'data', 'guide.html', 'index.html', 'korea-lotto.js', 'lottery.js', 'privacy.html', 'qa.html', 'qa.js',
+      'questions', 'robots.txt', 'script.js', 'sitemap.xml', 'style.css'
     ]);
     assert.deepEqual(readdirSync(join(output, 'data')).sort(), ['analysis.json', 'kr-lotto645.json']);
+    assert.deepEqual(JSON.parse(readFileSync(join(output, '_routes.json'), 'utf8')).include,
+      ['/api/v1/generate', '/api/v1/feedback', '/api/v1/admin-feedback', '/api/v1/qa',
+        '/admin/feedback', '/admin/feedback/*']);
+    assert.equal(readFileSync(join(output, 'questions', 'index.html'), 'utf8'),
+      readFileSync(join(output, 'qa.html'), 'utf8'));
+    for (const file of ['robots.txt', 'sitemap.xml', 'ads.txt']) {
+      assert.deepEqual(readFileSync(join(output, file)), readFileSync(join(__dirname, '..', file)));
+    }
     assert.equal(readFileSync(join(output, 'korea-lotto.js'), 'utf8'), '// Korea Lotto generation moved to the API.\n');
     assert.deepEqual(JSON.parse(readFileSync(join(output, 'data', 'kr-lotto645.json'))), { moved: true });
     for (const file of ['index.html', 'script.js', 'lottery.js', 'data/analysis.json']) {

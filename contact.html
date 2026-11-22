@@ -3,44 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>문의 안내 | World Lottery</title>
-  <meta name="description" content="World Lottery의 오류, 규칙 출처 수정과 접근성 문제를 공개 GitHub Issues에서 제보하는 방법입니다.">
+  <title>피드백 및 질문 | World Lottery</title>
+  <meta name="description" content="World Lottery에 오류를 제보하거나 개선을 제안하고 이용 방법을 문의할 수 있습니다.">
   <link rel="canonical" href="https://world-lottery.pages.dev/contact">
   <link rel="stylesheet" href="style.css">
+  <script src="contact.js" defer></script>
 </head>
 <body>
   <main class="information-page">
-    <nav class="information-nav" aria-label="사이트 안내">
-      <a href="index.html">번호 생성기</a>
-      <a href="about.html">사이트 소개</a>
-      <a href="guide.html">이용 안내</a>
-      <a href="privacy.html">개인정보처리방침</a>
-      <a href="contact.html" aria-current="page">문의 안내</a>
+    <nav class="information-nav" aria-label="World Lottery">
+      <a href="index.html" id="home-link">번호 생성기</a>
+      <a href="about.html" id="about-link">사이트 소개</a>
+      <a href="guide.html" id="guide-link">이용 안내</a>
+      <a href="privacy.html" id="privacy-link">개인정보처리방침</a>
     </nav>
     <article class="card information-content">
-      <h1>문의 안내</h1>
-      <nav class="information-nav" aria-label="다른 언어 요약">
-        <a href="#en" lang="en">English</a>
-        <a href="#ja" lang="ja">日本語</a>
-        <a href="#pt-BR" lang="pt-BR">Português (Brasil)</a>
+      <h1 id="contact-title">피드백 및 질문</h1>
+      <nav class="information-nav" aria-label="Language">
+        <a href="?lang=ko#ko" lang="ko" aria-current="true">한국어</a>
+        <a href="?lang=en#en" lang="en">English</a>
+        <a href="?lang=ja#ja" lang="ja">日本語</a>
+        <a href="?lang=pt-BR#pt-BR" lang="pt-BR">Português (Brasil)</a>
       </nav>
-      <h2>오류와 개선 제안</h2>
-      <p><a href="https://github.com/hongkak-torylabsco/world_lottery/issues">World Lottery GitHub Issues</a>에서 기존 제보를 찾아보고, 새 제보가 필요하면 GitHub 계정으로 이슈를 등록할 수 있습니다.</p>
-      <p>규칙 오류는 복권 이름, 문제가 있는 안내, 운영사의 근거 링크를 함께 알려 주세요. 기능 오류는 문제가 발생한 화면, 사용 언어와 브라우저, 재현 순서를 알려 주시면 확인에 도움이 됩니다.</p>
-      <h2>개인정보가 포함된 문의</h2>
-      <p>GitHub Issues는 공개 게시판입니다. 이름, 연락처, 계정 정보, 복권 티켓 사진을 올리지 마세요. 개인정보가 포함된 문의에 사용할 비공개 연락처는 현재 공개되어 있지 않습니다.</p>
-      <section id="en" lang="en">
-        <h2>English</h2>
-        <p>Use the public GitHub Issues board linked above to report errors, accessibility issues or rule corrections. Include the lottery name, official source or reproduction steps where applicable. Keep personal and account details out of public posts. A private contact channel is not currently listed.</p>
-      </section>
-      <section id="ja" lang="ja">
-        <h2>日本語</h2>
-        <p>上記の公開GitHub Issuesで不具合、アクセシビリティの問題、ルールの訂正を報告できます。宝くじ名、公式出典、再現手順などを添えてください。個人情報やアカウント情報を投稿しないでください。非公開の連絡先は現在掲載していません。</p>
-      </section>
-      <section id="pt-BR" lang="pt-BR">
-        <h2>Português (Brasil)</h2>
-        <p>Use o GitHub Issues público indicado acima para relatar falhas, questões de acessibilidade ou correções de regras. Envie o nome da loteria, a fonte oficial ou os passos para reproduzir o problema. Não publique dados pessoais ou da conta. Não há um canal privado de contato publicado.</p>
-      </section>
+      <p id="contact-intro">오류를 제보하거나 개선을 제안하고, 사이트 이용에 대해 질문할 수 있습니다. 제출 내용은 운영자가 확인합니다.</p>
+      <form id="contact-form" hidden novalidate>
+        <fieldset id="contact-fields">
+          <label for="contact-type" id="type-label">유형</label>
+          <select id="contact-type" name="type" required>
+            <option value="feedback">피드백</option>
+            <option value="question">질문</option>
+          </select>
+          <label for="contact-category" id="category-label">분류</label>
+          <select id="contact-category" name="category">
+            <option value="general">일반</option>
+            <option value="bug">오류 신고</option>
+            <option value="rules">복권 규칙</option>
+            <option value="other">기타</option>
+          </select>
+          <label for="contact-subject" id="subject-label">제목 (선택)</label>
+          <input id="contact-subject" name="title" maxlength="150">
+          <label for="contact-email" id="email-label">답변 받을 이메일 (선택)</label>
+          <input id="contact-email" name="email" type="email" autocomplete="email" maxlength="254">
+          <label for="contact-message" id="message-label">내용</label>
+          <textarea id="contact-message" name="message" required maxlength="3000" rows="7" aria-describedby="contact-note"></textarea>
+          <p id="contact-note">최대 3,000자까지 입력할 수 있습니다. 비밀번호나 복권 사진 같은 민감한 정보는 보내지 마세요.</p>
+          <div hidden><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
+          <div id="contact-verification"></div>
+          <button type="submit" id="contact-submit" class="btn btn-primary" disabled>보내기</button>
+        </fieldset>
+      </form>
+      <p id="contact-status" role="status" aria-live="polite"></p>
+      <p><a id="public-qa" href="/questions/">공개 질문과 답변</a></p>
+      <p><a id="public-issues" href="https://github.com/hongkak-torylabsco/world_lottery/issues">공개 GitHub 이슈 보기</a></p>
+      <noscript><p>문의 양식을 사용하려면 JavaScript를 켜 주세요. / Enable JavaScript to use the contact form.</p></noscript>
     </article>
   </main>
 </body>

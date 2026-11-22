@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'">
+  <title>공개 질문과 답변 | World Lottery</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/qa.js" defer></script>
+</head>
+<body>
+  <main class="information-page">
+    <nav class="information-nav" aria-label="World Lottery">
+      <a id="qa-contact" href="/contact.html">피드백 및 질문 보내기</a>
+    </nav>
+    <article class="card information-content">
+      <h1 id="qa-title">공개 질문과 답변</h1>
+      <nav class="information-nav" aria-label="Language">
+        <a href="?lang=ko" lang="ko" hreflang="ko" aria-current="true">한국어</a>
+        <a href="?lang=en" lang="en" hreflang="en">English</a>
+        <a href="?lang=ja" lang="ja" hreflang="ja">日本語</a>
+        <a href="?lang=pt-BR" lang="pt-BR" hreflang="pt-BR">Português (Brasil)</a>
+      </nav>
+      <form id="qa-filter" class="feedback-edit">
+        <input type="hidden" name="lang">
+        <label><span id="qa-search-label">검색어</span> <input name="q" type="search" maxlength="100"></label>
+        <label><span id="qa-category-label">분류</span>
+          <select name="category">
+            <option value="">전체</option>
+            <option value="general">일반</option>
+            <option value="bug">오류 신고</option>
+            <option value="rules">복권 규칙</option>
+            <option value="other">기타</option>
+          </select>
+        </label>
+        <button class="btn" id="qa-search" type="submit">검색</button>
+      </form>
+      <a id="qa-back" hidden>목록으로</a>
+      <p id="qa-status" role="status"></p>
+      <div id="qa-items"></div>
+      <nav class="information-nav" id="qa-pagination" aria-label="페이지 이동" hidden>
+        <a id="qa-prev" hidden>이전</a>
+        <a id="qa-next" hidden>다음</a>
+      </nav>
+      <noscript><p>질문과 답변을 보려면 JavaScript를 켜 주세요. / Enable JavaScript to view questions and answers.</p></noscript>
+    </article>
+  </main>
+  <template id="qa-item">
+    <section class="feedback-entry">
+      <h2 class="feedback-text"><a></a></h2>
+      <p data-category></p>
+    </section>
+  </template>
+</body>
+</html>

@@ -25,7 +25,7 @@
         <a href="#pt-BR" lang="pt-BR">Português (Brasil)</a>
       </nav>
       <h2>번호 생성과 클립보드</h2>
-      <p>번호를 생성할 때 선택한 복권, 수량, 생성 방식을 Cloudflare Worker로 보내고 생성된 번호를 받습니다. 복사를 선택하면 번호 텍스트가 기기의 클립보드에 기록됩니다. 화면을 초기화해도 기기 클립보드의 복사본은 남을 수 있습니다. 사이트에는 회원가입, 결제, 문의 양식이 없습니다.</p>
+      <p>번호를 생성할 때 선택한 복권, 수량, 생성 방식을 Cloudflare Worker로 보내고 생성된 번호를 받습니다. 복사를 선택하면 번호 텍스트가 기기의 클립보드에 기록됩니다. 화면을 초기화해도 기기 클립보드의 복사본은 남을 수 있습니다. 사이트에는 회원가입과 결제 기능이 없습니다.</p>
       <h2>번호 기록과 즐겨찾기</h2>
       <p>이미지 저장을 선택하면 번호 조합을 기기에서 PNG로 만들어 다운로드합니다. 번호 공유를 선택하면 번호와 사이트 주소(지원되는 경우 PNG 포함)가 기기의 공유 기능에 전달됩니다. 공유 대상은 사용자가 선택하며, 공유한 데이터에는 해당 서비스의 정책이 적용됩니다. 기기에서 공유 기능을 제공하지 않으면 번호와 사이트 주소를 클립보드에 복사합니다.</p>
       <p>생성 기록과 즐겨찾기는 이 사이트에 대한 브라우저 저장소(<code>localStorage</code>)에 보관됩니다. 저장 항목은 번호 조합, 국가·게임 식별자, 생성 당시 규칙, 기록 식별자, 생성·즐겨찾기 시각입니다. 생성기는 이를 외부 서버에 전송하지 않습니다. 화면에서 기록을 삭제하거나 즐겨찾기를 해제할 수 있으며, 브라우저에서 사이트 데이터를 지우면 둘 다 삭제됩니다. 서로 다른 기기나 브라우저 간에는 동기화되지 않습니다.</p>
@@ -35,19 +35,27 @@
       <p>AdSense 코드가 적용된 버전의 생성기 페이지를 열면 브라우저가 Google에 스크립트를 요청합니다. 그 과정에서 방문 URL, IP 주소 등 기술 정보가 Google에 전송될 수 있습니다. 광고가 제공되는 경우 Google과 광고 기술 제공업체는 쿠키를 설정하거나 읽고 웹 비콘, IP 주소 또는 기타 식별자를 사용해 광고를 제공·측정하고 부정 활동을 방지할 수 있습니다. 개인 맞춤 광고에 적용되는 처리는 설정과 동의에 따라 달라질 수 있습니다.</p>
       <p><a href="https://policies.google.com/technologies/partner-sites?hl=ko">Google이 파트너 사이트의 정보를 사용하는 방법</a>과 <a href="https://myadcenter.google.com/">Google 내 광고 센터</a>에서 자세한 내용과 맞춤 광고 설정을 확인할 수 있습니다. 브라우저 설정에서 쿠키를 관리할 수 있습니다. 사이트에서 광고 동의 설정을 제공하는 경우 해당 설정을 통해 선택을 변경할 수 있습니다.</p>
       <h2>외부 링크와 문의</h2>
-      <p>복권 출처나 GitHub 문의 링크를 열면 해당 서비스의 개인정보처리방침이 적용됩니다. 공개 이슈에 개인 정보, 구매 내역, 계정 정보를 올리지 마세요. 사이트 관련 문의 방법은 <a href="contact.html">문의 안내</a>에 있습니다.</p>
+      <p><a href="contact.html">피드백 및 질문 양식</a>을 제출하면 유형, 분류, 선택 제목, 언어, 내용, 선택 이메일, 접수 번호와 접수 시각이 Cloudflare D1에 저장됩니다. 인증된 운영자가 문의 상태, 내부 메모와 답변을 관리하며, 이메일이 제공된 경우 직접 답변할 수 있습니다. 복권 출처나 공개 GitHub 링크를 열면 해당 서비스의 개인정보처리방침이 적용됩니다.</p>
+      <p>자동 제출을 줄이기 위해 Cloudflare Turnstile을 사용하고, IP 주소에서 만든 단기 식별자로 접수 횟수를 제한합니다. 공개 Q&amp;A에는 운영자가 별도로 작성해 승인한 질문과 답변을 게시합니다.</p>
+      <p>개인정보 또는 문의 삭제를 요청하려면 문의 양식에 접수 번호를 알려 주세요. 운영자가 이메일과 비공개 내용을 삭제하거나 문의 전체를 삭제할 수 있습니다. 보관 기간과 개인정보 관련 법적 문구는 운영 배포 전에 운영자가 확정할 항목입니다.</p>
       <section id="en" lang="en">
         <h2>English</h2>
+        <p>The <a href="contact.html#en">contact form</a> saves your submission type, category, optional subject, language, message, optional email, reference number and submission time in Cloudflare D1. Authorized operators manage its status, internal notes and replies and may reply by email.</p>
+        <p>The form uses Cloudflare Turnstile and a short-lived identifier derived from your IP address to limit automated submissions. The public Q&amp;A contains questions and answers separately written and approved by the operator. To request deletion, submit the reference number using the contact form. The operator must confirm the retention period and legal wording before deployment.</p>
         <p>Saving an image creates and downloads a PNG on your device. Sharing passes the numbers and site address, with the PNG when supported, to your device’s share feature. You choose the recipient or app, whose policies apply to any data you share. When sharing is unavailable, the numbers and site address are copied to your clipboard.</p>
         <p>To generate numbers, the browser sends the selected game, ticket count and generation mode to a Cloudflare Worker and receives the results. Generation history and favorites are kept in localStorage on this browser, including the numbers, game, rule snapshot and timestamps. Delete them in the generator or clear site data in browser settings. Copying writes to your device clipboard. Cloudflare may process technical request data, such as IP addresses, to serve requests and limit request rates. Where the AdSense tag is deployed, Google can receive the visited URL and IP address. When ads are served, providers may use cookies, web beacons and identifiers for ad delivery, measurement and fraud prevention. For controls, see Google My Ad Center and your browser settings.</p>
       </section>
       <section id="ja" lang="ja">
         <h2>日本語</h2>
+        <p><a href="contact.html#ja">お問い合わせフォーム</a>で送信された種類、分類、任意の件名、言語、内容、任意のメールアドレス、受付番号、受付日時は Cloudflare D1 に保存されます。認証された運営者が対応状況、内部メモ、回答を管理し、メールで返信することがあります。</p>
+        <p>自動送信を抑えるため、Cloudflare Turnstile と IP アドレスから生成した短期間の識別子を使用します。公開 Q&amp;A には運営者が公開用に作成し、承認した質問と回答を掲載します。削除をご希望の場合は、お問い合わせフォームから受付番号をお知らせください。保存期間と法的文言は公開前に運営者が確認します。</p>
         <p>画像を保存すると、端末内でPNGを作成してダウンロードします。共有を選ぶと、数字とサイトのURL、対応している場合はPNGが端末の共有機能に渡されます。共有先は利用者が選び、共有したデータには共有先のポリシーが適用されます。共有機能を利用できない場合は、数字とURLをクリップボードにコピーします。</p>
         <p>数字の生成時に、選んだ宝くじ、口数、生成方式をCloudflare Workerに送信し、生成結果を受け取ります。生成履歴とお気に入りは、数字、ゲーム、ルールの記録、日時とともに、使用中のブラウザのlocalStorageに保存されます。生成画面やブラウザのサイトデータ設定から削除できます。コピー時は端末のクリップボードに書き込みます。Cloudflareはリクエストの処理や回数制限のため、IPアドレスなどの技術情報を処理する場合があります。AdSenseタグが配信されるページでは、Googleに閲覧URLやIPアドレスが送信される場合があります。広告配信時は、事業者がCookie、ウェブビーコン、識別子を使用する場合があります。</p>
       </section>
       <section id="pt-BR" lang="pt-BR">
         <h2>Português (Brasil)</h2>
+        <p>O <a href="contact.html#pt-BR">formulário de contato</a> salva no Cloudflare D1 o tipo, a categoria, o assunto opcional, o idioma, a mensagem, o e-mail opcional, o protocolo e o horário de envio. A equipe autorizada gerencia o estado, as notas internas e as respostas, e pode responder por e-mail.</p>
+        <p>O formulário usa o Cloudflare Turnstile e um identificador temporário derivado do endereço IP para limitar envios automatizados. A seção pública contém perguntas e respostas redigidas separadamente e aprovadas pela equipe. Para solicitar a exclusão, informe o protocolo pelo formulário. A equipe deve confirmar o prazo de retenção e o texto jurídico antes da publicação.</p>
         <p>Salvar uma imagem cria e baixa um PNG no seu dispositivo. Ao compartilhar, os números e o endereço do site, junto com o PNG quando houver suporte, são enviados ao recurso de compartilhamento do dispositivo. Você escolhe o destinatário ou aplicativo, cujas políticas se aplicam aos dados compartilhados. Se o recurso estiver indisponível, os números e o endereço são copiados para a área de transferência.</p>
         <p>Para gerar números, o navegador envia o jogo, a quantidade e o modo de geração a um Cloudflare Worker e recebe os resultados. O histórico e os favoritos ficam no localStorage deste navegador, incluindo números, jogo, regras e datas. Você pode apagá-los no gerador ou limpar os dados do site nas configurações do navegador. Copiar grava no clipboard do dispositivo. A Cloudflare pode processar dados técnicos, como o endereço IP, para atender às requisições e limitar sua frequência. Quando a tag do AdSense está publicada, o Google pode receber a URL visitada e o IP. Na veiculação de anúncios, fornecedores podem usar cookies, web beacons e identificadores.</p>
       </section>

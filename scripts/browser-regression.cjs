@@ -400,6 +400,52 @@ async function check(browser, url) {
     assert.equal(await evalPage("document.querySelector('input[name=korea-mode]:checked')?.value"), mode);
   }
   console.log('Explicit choices for both Korea modes survive reload');
+
+  if (['127.0.0.1', 'localhost'].includes(new URL(url).hostname)) {
+    const assertion = await fetch(new URL('/admin/feedback/', url), { redirect: 'manual' });
+    assert.equal(assertion.status, 401);
+    assert.match(await assertion.text(), /Access required/);
+    await send('Page.addScriptToEvaluateOnNewDocument', {
+      source: `
+        const fetchQa = window.fetch.bind(window);
+        window.fetch = (url, options) => {
+          if (!String(url).startsWith('/api/v1/qa?')) return fetchQa(url, options);
+          const item = { id: 1, category: 'rules', question: '<b>Question</b>', answer: '<i>Answer</i>' };
+          return Promise.resolve(Response.json(new URL(url, location.origin).searchParams.has('id')
+            ? { item } : { items: [item], more: true }));
+        };
+      `
+    });
+    async function visit(path, selector) {
+      await send('Page.navigate', { url: new URL(path, url).href });
+      for (let attempt = 0; attempt < 60; attempt++) {
+        if (await evalPage(selector)) return;
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      assert.fail('Page did not render: ' + path);
+    }
+    for (const [lang, label] of [['ko', '분류'], ['en', 'Category'], ['ja', '分類'], ['pt-BR', 'Categoria'], ['fr', 'Category']]) {
+      await visit('/contact?lang=' + lang,
+        "location.search === " + JSON.stringify('?lang=' + lang) + " && document.querySelector('#contact-form')?.hidden === false");
+      assert.equal(await evalPage("document.querySelector('#category-label').textContent"), label);
+    }
+    await visit('/questions/?lang=pt-BR&category=rules&q=Question',
+      "document.querySelector('#qa-items h2 a')?.textContent === '<b>Question</b>'");
+    const list = await evalPage(() => {
+      const link = document.querySelector('#qa-items h2 a');
+      return { detail: link.href, literal: !link.querySelector('b'), lang: document.documentElement.lang,
+        filter: document.querySelector('#qa-filter').elements.category.value,
+        next: document.getElementById('qa-next').getAttribute('href') };
+    });
+    assert.equal(list.lang, 'pt-BR');
+    assert.equal(list.filter, 'rules');
+    assert.equal(list.literal, true);
+    assert.equal(new URLSearchParams(list.next).get('offset'), '20');
+    assert.equal(new URLSearchParams(list.next).get('q'), 'Question');
+    await visit(list.detail, "document.querySelector('#qa-items p')?.textContent === '<i>Answer</i>'");
+    assert.equal(await evalPage("document.querySelector('#qa-items i') === null"), true);
+    console.log('Contact locales, protected Pages route, and Q&A filters, pagination and literal rendering OK');
+  }
 }
 
 async function main() {
