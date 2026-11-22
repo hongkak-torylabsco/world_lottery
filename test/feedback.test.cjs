@@ -170,20 +170,21 @@ function access(t) {
   const { publicKey, privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
   const issuer = 'https://lottery.cloudflareaccess.com';
   const aud = 'admin-test-audience';
+  const email = 'operator@example.test';
   const key = { ...publicKey.export({ format: 'jwk' }), kid: 'local-key' };
   t.mock.method(globalThis, 'fetch', async (url, options) => {
     assert.equal(url, issuer + '/cdn-cgi/access/certs');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     return Response.json({ keys: [key] });
   });
   const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
   function token(changes = {}, header = {}, wrongSignature = false) {
     const body = encode({ alg: 'RS256', kid: key.kid, ...header }) + '.' +
-      encode({ iss: issuer, aud: [aud], exp: Math.floor(Date.now() / 1000) + 300, type: 'app', ...changes });
+      encode({ iss: issuer, aud: [aud], email, exp: Math.floor(Date.now() / 1000) + 300, type: 'app', ...changes });
     const signature = wrongSignature ? 'AAAA' : sign('RSA-SHA256', Buffer.from(body), privateKey).toString('base64url');
     return body + '.' + signature;
   }
-  return { token, env: { FEEDBACK_ACCESS_ISSUER: issuer, FEEDBACK_ACCESS_AUD: aud } };
+  return { token, env: { FEEDBACK_ACCESS_ISSUER: issuer, FEEDBACK_ACCESS_AUD: aud, FEEDBACK_ACCESS_ADMIN_EMAIL: email } };
 }
 
 test('administrator UI and API fail closed for invalid Access assertions', async t => {
@@ -194,6 +195,7 @@ test('administrator UI and API fail closed for invalid Access assertions', async
   });
   const now = Math.floor(Date.now() / 1000);
   for (const assertion of [undefined, 'malformed', token({}, {}, true), token({ aud: ['wrong'] }),
+    token({ email: 'another@example.test' }), token({ email: undefined }),
     token({ iss: 'https://another.cloudflareaccess.com' }), token({ exp: now - 1 }),
     token({ exp: null }), token({ nbf: now + 3600 }), token({ type: 'org' }),
     token({}, { alg: 'none' }), token({}, { kid: 'unknown' })]) {
@@ -201,6 +203,9 @@ test('administrator UI and API fail closed for invalid Access assertions', async
     assert.equal((await endpoint(adminPage, '/admin/feedback/', assertion)).status, 401);
   }
   assert.equal((await endpoint(adminPage, '/admin/feedback/', token(), {})).status, 401);
+  assert.equal((await endpoint(adminPage, '/admin/feedback/', token(), {
+    ...env, FEEDBACK_ACCESS_ADMIN_EMAIL: undefined
+  })).status, 401);
   assert.equal((await endpoint(admin, '/api/v1/admin-feedback', token(), {
     ...env, FEEDBACK_ACCESS_API_AUD: 'different-application'
   })).status, 401);
@@ -209,6 +214,8 @@ test('administrator UI and API fail closed for invalid Access assertions', async
   assert.equal(page.headers.get('Cache-Control'), 'private, no-store');
   assert.match(page.headers.get('Content-Security-Policy'), /frame-ancestors 'none'/);
   assert.match(await page.text(), /id="admin-filter"/);
+  fetch.mock.mockImplementation(async () => Response.redirect('https://untrusted.example/certs'));
+  assert.equal((await endpoint(adminPage, '/admin/feedback/', token())).status, 401);
 });
 
 test('additive migration preserves existing private and published records', t => {
