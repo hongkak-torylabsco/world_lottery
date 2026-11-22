@@ -6,7 +6,7 @@
       type: '유형', feedback: '피드백', question: '질문', email: '답변 받을 이메일 (선택)', message: '내용',
       note: '최대 3,000자까지 입력할 수 있습니다. 비밀번호나 복권 사진 같은 민감한 정보는 보내지 마세요.',
       submit: '보내기', issues: '공개 GitHub 이슈 보기', qa: '공개 질문과 답변', sending: '보내는 중…',
-      verification: '보안 확인을 완료한 뒤 다시 보내 주세요.',
+      verification: '보안 확인을 완료한 뒤 다시 보내 주세요.', checking: '보안 확인을 기다리는 중입니다.',
       success: '접수 번호', receiptTitle: '전송 완료', done: '완료', invalid: '내용과 이메일 주소를 확인해 주세요.',
       failure: '접수에 실패했습니다. 잠시 후 다시 시도해 주세요.'
     },
@@ -16,7 +16,7 @@
       type: 'Type', feedback: 'Feedback', question: 'Question', email: 'Email for a reply (optional)', message: 'Message',
       note: 'Use up to 3,000 characters. Please leave out sensitive information such as passwords or lottery ticket photos.',
       submit: 'Send', issues: 'View public GitHub issues', qa: 'Public Q&A', sending: 'Sending…',
-      verification: 'Complete the security check and try again.',
+      verification: 'Complete the security check and try again.', checking: 'Waiting for the security check.',
       success: 'Reference', receiptTitle: 'Submission received', done: 'Done', invalid: 'Check your message and email address.',
       failure: 'Your submission could not be saved. Please try again in a moment.'
     },
@@ -26,7 +26,7 @@
       type: '種類', feedback: 'ご意見', question: 'ご質問', email: '返信先メールアドレス（任意）', message: '内容',
       note: '3,000文字まで入力できます。パスワードや宝くじ券の写真などの機密情報は送信しないでください。',
       submit: '送信', issues: 'GitHub の公開 Issue を見る', qa: '公開されている質問と回答', sending: '送信中…',
-      verification: 'セキュリティ確認を完了してから、もう一度送信してください。',
+      verification: 'セキュリティ確認を完了してから、もう一度送信してください。', checking: 'セキュリティ確認を待っています。',
       success: '受付番号', receiptTitle: '送信完了', done: '完了', invalid: '内容とメールアドレスを確認してください。',
       failure: '送信を受け付けられませんでした。しばらくしてからもう一度お試しください。'
     },
@@ -36,7 +36,7 @@
       type: 'Tipo', feedback: 'Feedback', question: 'Pergunta', email: 'E-mail para resposta (opcional)', message: 'Mensagem',
       note: 'Use até 3.000 caracteres. Evite dados confidenciais, como senhas ou fotos de bilhetes de loteria.',
       submit: 'Enviar', issues: 'Ver issues públicas no GitHub', qa: 'Perguntas e respostas públicas', sending: 'Enviando…',
-      verification: 'Conclua a verificação de segurança e tente novamente.',
+      verification: 'Conclua a verificação de segurança e tente novamente.', checking: 'Aguardando a verificação de segurança.',
       success: 'Protocolo', receiptTitle: 'Envio recebido', done: 'Concluir', invalid: 'Confira a mensagem e o endereço de e-mail.',
       failure: 'Não foi possível registrar seu envio. Tente novamente em instantes.'
     }
@@ -118,6 +118,10 @@
       callback(token) {
         turnstileToken = token;
         submit.disabled = false;
+        if (state === 'checking') {
+          state = undefined;
+          renderStatus();
+        }
       },
       'expired-callback': clearVerification,
       'error-callback': () => {
@@ -129,21 +133,29 @@
   }
 
   async function loadVerification() {
+    state = 'checking';
+    renderStatus();
+    function showVerificationFailure() {
+      state = 'failure';
+      renderStatus();
+    }
     try {
       const response = await fetch('/api/v1/feedback', { signal: AbortSignal.timeout(8000) });
       if (!response.ok) throw new Error('Feedback unavailable');
       ({ siteKey } = await response.json());
       const script = document.createElement('script');
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-      script.onload = () => window.turnstile.ready(renderVerification);
-      script.onerror = () => {
-        state = 'failure';
-        renderStatus();
+      script.onload = () => {
+        try {
+          renderVerification();
+        } catch {
+          showVerificationFailure();
+        }
       };
+      script.onerror = showVerificationFailure;
       document.head.append(script);
     } catch {
-      state = 'failure';
-      renderStatus();
+      showVerificationFailure();
     }
   }
 
@@ -162,7 +174,7 @@
   });
   form.addEventListener('input', () => {
     submissionId = undefined;
-    state = undefined;
+    if (turnstileToken || state === 'success') state = undefined;
     renderStatus();
   });
   form.addEventListener('submit', async event => {
