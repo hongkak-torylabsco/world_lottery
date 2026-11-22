@@ -1019,52 +1019,6 @@ body {
   font-weight: 700;
 }
 
-.feedback-entry {
-  border-top: 1px solid #cbd5e1;
-  margin-top: 16px;
-  padding-bottom: 12px;
-  overflow-wrap: anywhere;
-}
-
-.feedback-text {
-  white-space: pre-wrap;
-}
-
-.feedback-edit:not([hidden]) {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.feedback-edit textarea {
-  display: block;
-  width: 100%;
-  font: inherit;
-  resize: vertical;
-}
-
-.feedback-edit input[type="search"],
-.feedback-edit select,
-.feedback-entry select,
-.feedback-edit textarea {
-  max-width: 100%;
-  border: 1px solid #64748b;
-  border-radius: 8px;
-  padding: 8px;
-  font: inherit;
-}
-
-.feedback-edit > .btn {
-  justify-self: start;
-  max-width: 100%;
-}
-
-.feedback-entry summary {
-  cursor: pointer;
-  font-weight: 600;
-  padding: 12px 0;
-}
-
 #qa-pagination[hidden] {
   display: none;
 }

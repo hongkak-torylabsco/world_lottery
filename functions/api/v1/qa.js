@@ -15,7 +15,7 @@ export async function onRequest({ request, env }) {
   try {
     const { results } = await env.FEEDBACK_DB.prepare(
       `SELECT id, category, question, answer, published_at FROM public_qa
-       WHERE status = 'published' AND lang = ?1 AND (?2 = '' OR category = ?2)
+       WHERE status = 'published' AND privacy_reviewed_at IS NOT NULL AND lang = ?1 AND (?2 = '' OR category = ?2)
          AND (?3 = '' OR instr(lower(question), lower(?3)) OR instr(lower(answer), lower(?3)))
          AND (?4 IS NULL OR id = ?4)
        ORDER BY id DESC LIMIT 21 OFFSET ?5`

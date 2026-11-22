@@ -7,7 +7,7 @@ const html = String.raw`<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>문의 관리 | World Lottery</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/admin-feedback.css">
   <script src="/admin-feedback.js" defer></script>
 </head>
 <body>
@@ -15,6 +15,12 @@ const html = String.raw`<!DOCTYPE html>
     <article class="card information-content">
       <h1>문의 관리</h1>
       <form id="admin-filter" class="feedback-edit">
+        <label>보기
+          <select name="view">
+            <option value="">문의</option>
+            <option value="independent">독립 공개 Q&amp;A</option>
+          </select>
+        </label>
         <label>검색어 <input name="q" type="search" maxlength="100"></label>
         <label>문의 상태
           <select name="status">
@@ -72,7 +78,7 @@ const html = String.raw`<!DOCTYPE html>
       <form class="feedback-edit" data-public-form hidden>
         <h3>공개용 질문과 답변</h3>
         <p data-publication></p>
-        <p>공개하기 전에 개인 정보, 연락처, 계정 정보가 빠졌는지 확인하세요.</p>
+        <label><input type="checkbox" name="privacyReviewed"> 질문과 답변에서 개인정보와 원본 접수 번호를 제거했음을 확인합니다.</label>
         <label>게시 언어
           <select name="lang">
             <option value="ko">한국어</option>
@@ -89,10 +95,10 @@ const html = String.raw`<!DOCTYPE html>
           <button class="btn" type="button" data-unpublish hidden>공개 취소</button>
         </div>
       </form>
-      <div class="feedback-edit">
+      <div class="feedback-edit" data-private-actions>
         <label><input type="checkbox" data-redact-content> 비공개 제목·내용·메모·답변도 지우기</label>
         <button class="btn" type="button" data-redact>개인정보 삭제</button>
-        <button class="btn" type="button" data-delete>문의 및 연결된 Q&amp;A 삭제</button>
+        <button class="btn" type="button" data-delete>비공개 문의 삭제</button>
       </div>
       <p role="status" data-result></p>
     </details>

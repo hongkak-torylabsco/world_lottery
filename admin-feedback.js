@@ -23,15 +23,16 @@
       status.textContent = 'Access 로그인 세션을 확인하려면 페이지를 새로고침해 주세요.';
       throw new Error('Access session unavailable');
     }
-    if (!response.ok) throw new Error('Admin request failed');
+    if (!response.ok) throw new Error(String(response.status));
     return response.json();
   }
 
   function showItem(item) {
     const entry = template.content.cloneNode(true);
     const details = entry.querySelector('details');
+    const independent = filters.view === 'independent';
     const type = item.type === 'question' ? '질문' : '피드백';
-    entry.querySelector('summary').textContent = item.title || type;
+    entry.querySelector('summary').textContent = independent ? item.question : item.title || type;
     entry.querySelector('[data-private-meta]').textContent =
       [type, categories[item.category], item.lang, item.created_at + ' UTC', item.id].join(' · ');
     entry.querySelector('[data-message]').textContent = item.message;
@@ -53,26 +54,35 @@
         await api('', { ...data, id: item.id });
         result.textContent = '저장했습니다.';
         done?.();
-      } catch {
-        result.textContent = '저장하지 못했습니다. 세션을 확인한 뒤 다시 시도해 주세요.';
+      } catch (error) {
+        result.textContent = ['409', '422'].includes(error.message)
+          ? '질문과 답변의 개인정보 및 원문 복사 여부를 확인해 주세요. 만료되거나 이미 삭제된 문의는 게시할 수 없습니다.'
+          : '저장하지 못했습니다. 세션을 확인한 뒤 다시 시도해 주세요.';
       } finally {
         controls.forEach(control => { control.disabled = false; });
       }
     }
 
-    statusForm.elements.status.value = item.status;
-    statusForm.addEventListener('submit', event => {
-      event.preventDefault();
-      save({ action: 'status', status: statusForm.elements.status.value }, () => {
-        if (filters.status && filters.status !== statusForm.elements.status.value) loadPage(offset);
+    if (independent) {
+      for (const selector of ['[data-private-meta]', '[data-message]', '[data-email]',
+        '[data-status-form]', '[data-review]', '[data-private-actions]']) entry.querySelector(selector).hidden = true;
+      unpublish.textContent = '공개 취소 및 삭제';
+      publicForm.querySelector('button[type="submit"]').textContent = '공개 내용 수정';
+    } else {
+      statusForm.elements.status.value = item.status;
+      statusForm.addEventListener('submit', event => {
+        event.preventDefault();
+        save({ action: 'status', status: statusForm.elements.status.value }, () => {
+          if (filters.status && filters.status !== statusForm.elements.status.value) loadPage(offset);
+        });
       });
-    });
-    review.elements.note.value = item.internal_note;
-    review.elements.response.value = item.operator_answer;
-    review.addEventListener('submit', event => {
-      event.preventDefault();
-      save({ action: 'review', ...Object.fromEntries(new FormData(review)) });
-    });
+      review.elements.note.value = item.internal_note;
+      review.elements.response.value = item.operator_answer;
+      review.addEventListener('submit', event => {
+        event.preventDefault();
+        save({ action: 'review', ...Object.fromEntries(new FormData(review)) });
+      });
+    }
 
     function publication(published) {
       unpublish.hidden = !published;
@@ -80,7 +90,7 @@
       entryStatus.textContent = published ? '게시 중' : '비공개';
     }
 
-    if (item.type === 'question') {
+    if (independent || item.type === 'question') {
       publicForm.hidden = false;
       publicForm.elements.lang.value = item.public_lang || item.lang;
       publicForm.elements.question.value = item.question || '';
@@ -88,11 +98,26 @@
       publication(item.publication === 'published');
       publicForm.addEventListener('submit', event => {
         event.preventDefault();
-        const action = event.submitter === draft ? 'draft' : 'publish';
-        if (action === 'publish' && !confirm('작성한 공개 질문과 답변을 게시하시겠습니까?')) return;
-        save({ action, ...Object.fromEntries(new FormData(publicForm)) }, () => publication(action === 'publish'));
+        const action = independent ? 'editIndependent' : event.submitter === draft ? 'draft' : 'publish';
+        const privacyReviewed = publicForm.elements.privacyReviewed.checked;
+        if (action !== 'draft' && !privacyReviewed) {
+          result.textContent = '게시하려면 개인정보 검토 여부를 확인해 주세요.';
+          return;
+        }
+        if (action !== 'draft' && !confirm('작성한 공개 질문과 답변을 게시하시겠습니까?')) return;
+        save({ ...Object.fromEntries(new FormData(publicForm)), action, privacyReviewed }, () => {
+          publicForm.elements.privacyReviewed.checked = false;
+          if (independent) loadPage(offset);
+          else publication(action === 'publish');
+        });
       });
-      unpublish.addEventListener('click', () => save({ action: 'unpublish' }, () => publication(false)));
+      unpublish.addEventListener('click', () => {
+        if (independent && !confirm('이 독립 공개 Q&A를 삭제하시겠습니까?')) return;
+        save({ action: independent ? 'removeIndependent' : 'unpublish' }, () => {
+          if (independent) loadPage(offset);
+          else publication(false);
+        });
+      });
     }
     entry.querySelector('[data-redact]').addEventListener('click', () => {
       const includeMessage = details.querySelector('[data-redact-content]').checked;
@@ -104,7 +129,7 @@
       });
     });
     entry.querySelector('[data-delete]').addEventListener('click', () => {
-      if (!confirm('문의와 연결된 Q&A를 삭제하시겠습니까?')) return;
+      if (!confirm('비공개 문의를 삭제하시겠습니까? 검토되어 게시 중인 Q&A는 유지됩니다. 개인정보가 있다면 먼저 공개를 취소해 주세요.')) return;
       save({ action: 'delete' }, () => {
         details.remove();
         loadPage(offset);

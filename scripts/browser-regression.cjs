@@ -402,9 +402,26 @@ async function check(browser, url) {
   console.log('Explicit choices for both Korea modes survive reload');
 
   if (['127.0.0.1', 'localhost'].includes(new URL(url).hostname)) {
-    const assertion = await fetch(new URL('/admin/feedback/', url), { redirect: 'manual' });
-    assert.equal(assertion.status, 401);
-    assert.match(await assertion.text(), /Access required/);
+    for (const legacyPath of ['/qa', '/qa/', '/qa.html']) {
+      const response = await fetch(new URL(legacyPath + '?lang=en&id=1', url), { redirect: 'manual' });
+      assert.equal(response.status, 301, legacyPath);
+      const location = new URL(response.headers.get('Location'), url);
+      assert.equal(location.pathname, '/questions/');
+      assert.equal(location.searchParams.get('lang'), 'en');
+      assert.equal(location.searchParams.get('id'), '1');
+    }
+    const questions = await fetch(new URL('/questions/', url), { redirect: 'manual' });
+    assert.equal(questions.status, 200);
+    assert.match(await questions.text(), /rel="canonical" href="https:\/\/world-lottery\.pages\.dev\/questions\/"/);
+    for (const path of ['/admin/feedback/', '/api/v1/admin-feedback', '/api/v1/admin-feedback/', '/admin-feedback.js', '/admin-feedback.css']) {
+      const response = await fetch(new URL(path, url), { redirect: 'manual' });
+      assert.equal(response.status, 404, path);
+    }
+    const mutation = await fetch(new URL('/api/v1/admin-feedback', url), {
+      method: 'POST', redirect: 'manual', body: '{}'
+    });
+    assert.equal(mutation.status, 405);
+    assert.doesNotMatch(mutation.headers.get('Content-Type') ?? '', /application\/json/i);
     await send('Page.addScriptToEvaluateOnNewDocument', {
       source: `
         const fetchQa = window.fetch.bind(window);
@@ -444,7 +461,7 @@ async function check(browser, url) {
     assert.equal(new URLSearchParams(list.next).get('q'), 'Question');
     await visit(list.detail, "document.querySelector('#qa-items p')?.textContent === '<i>Answer</i>'");
     assert.equal(await evalPage("document.querySelector('#qa-items i') === null"), true);
-    console.log('Contact locales, protected Pages route, and Q&A filters, pagination and literal rendering OK');
+    console.log('Contact locales, missing public admin routes, and Q&A filters, pagination and literal rendering OK');
   }
 }
 

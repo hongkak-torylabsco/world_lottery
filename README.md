@@ -4,30 +4,34 @@
 
 문의 페이지는 한국어, 영어, 일본어, 브라질 포르투갈어로 피드백과 질문을 받습니다. 문의 유형과 함께 일반, 오류 신고, 복권 규칙, 기타 분류를 선택할 수 있습니다. 접수 번호를 발급하며, 이메일과 제목은 선택입니다. 지원하지 않는 언어를 요청하면 영어 UI가 표시됩니다.
 
-`/admin/feedback/`에서 Access 로그인 후 비공개 문의를 검색하고 상태·분류로 필터링할 수 있습니다. 상세 화면에서 상태, 내부 메모, 비공개 답변을 관리합니다. 운영자는 이메일로 직접 답변합니다. 이메일만 삭제하거나 비공개 제목·본문·메모·답변도 함께 지울 수 있습니다. 문의 전체를 삭제하면 연결된 Q&A도 삭제됩니다.
+`/admin/feedback/`에서 Access 로그인 후 비공개 문의를 검색하고 상태·분류로 필터링할 수 있습니다. 상세 화면에서 상태, 내부 메모, 비공개 답변과 개인정보 삭제를 관리합니다. 운영자는 이메일로 직접 답변합니다. 문의를 삭제하면 연결 초안은 삭제되고, 개인정보 검토를 거친 공개 Q&A는 문의 연결을 해제하여 유지됩니다. 독립 Q&A는 별도 보기에서 수정하거나 공개 취소할 수 있습니다.
 
-`/questions/`에서는 게시 언어, 분류, 검색어로 승인된 질문을 찾고 상세 답변을 볼 수 있습니다. 기존 `/qa` 주소도 사용할 수 있습니다. 운영자가 별도로 작성한 공개 질문과 답변을 승인하면 게시됩니다. 승인 취소 시 같은 항목을 비공개 초안으로 전환합니다. 공개 전 이름·연락처·계정 정보 포함 여부를 확인하세요.
+`/questions/`에서는 게시 언어, 분류, 검색어로 개인정보 검토를 거쳐 승인된 질문을 찾고 상세 답변을 볼 수 있습니다. 기존 `/qa`, `/qa/`, `/qa.html`은 이 주소로 영구 리디렉션합니다. 사이트맵에는 대표 주소만 포함합니다. 연결된 게시물의 승인 취소는 비공개 초안으로 전환합니다. 독립 게시물의 공개 취소는 해당 게시물을 삭제합니다.
 
-### 로컬 검증과 향후 Cloudflare Pages 설정
+### 로컬 검증과 운영 배포 설계
 
 1. 로컬에서 Node.js 26의 `node --test`와 `node scripts/update-draws.cjs --verify`를 실행합니다. SQLite에서 D1 SQL을 실행하고, 테스트에서 생성한 키로 실제 RS256 JWT를 서명하며 JWKS와 Siteverify 응답을 모의합니다. 브라우저 회귀 실행은 아래 절차를 따릅니다.
-2. 배포 승인 후 D1의 마이그레이션 이력을 확인합니다. 새 D1은 [0001](migrations/0001_feedback.sql), [0002](migrations/0002_feedback_moderation.sql), [0003](migrations/0003_feedback_workflow.sql) 순서로 적용합니다. 0001과 0002가 이미 적용된 D1은 0003만 적용합니다. 0003은 기존 접수, 상태와 승인 게시물을 보존합니다. 동작 검증에는 Preview 전용 D1을 사용합니다.
-3. Pages에 `FEEDBACK_DB`를 연결하고 기존 `ENGINE` 바인딩을 유지합니다. Turnstile 공개 키는 `TURNSTILE_SITE_KEY`, 비밀 키는 `TURNSTILE_SECRET`, 허용 호스트 목록은 `TURNSTILE_HOSTNAMES`에 설정합니다. Siteverify의 호스트와 action도 검사합니다. 접수 POST는 IP별 고정 10분 구간당 최대 10회로 제한합니다. 원본 IP는 접수 DB에 저장하지 않으며 구간마다 바뀌는 HMAC 식별자를 사용합니다. 지난 식별자는 다음 접수 처리 중 정리합니다. [Pages D1 바인딩](https://developers.cloudflare.com/pages/functions/bindings/#d1-databases) · [Turnstile Siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/)
-4. Access에서 운영자용 호스트와 경로 `/admin/feedback`, `/admin/feedback/*`, `/api/v1/admin-feedback`를 보호하고 허가된 운영자만 허용합니다. 로그인과 주입되는 JWT 헤더를 확인할 수 있는 Pages 연결 사용자 지정 운영자 호스트를 사용할 수 있습니다. 공개 `pages.dev` 루트에는 로그인 요구를 적용하지 않습니다. Pages의 `FEEDBACK_ACCESS_ISSUER`에는 `https://<팀>.cloudflareaccess.com`, `FEEDBACK_ACCESS_AUD`에는 Access 앱 AUD를 설정합니다. `FEEDBACK_ACCESS_ADMIN_EMAIL`에는 Access 정책에서 허용한 운영자 이메일을 지정합니다. API를 별도 Access 앱으로 보호할 때는 `FEEDBACK_ACCESS_API_AUD`에 해당 AUD를 지정합니다. 관리자 HTML과 API는 각각 JWT를 재검증합니다. 설정이 빠졌거나 검증에 실패하면 요청은 401로 거부됩니다. [Access JWT 검증](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/) · [Pages 사용자 지정 도메인](https://developers.cloudflare.com/pages/configuration/custom-domains/)
-5. 승인 후 Preview에서 실제 Access 로그인, Turnstile, 접수 번호, 상태·메모·답변 저장, 게시·취소, 개인정보 삭제를 확인합니다. 일반 접속에서는 공개 Q&A와 번호 생성기가 열리고 관리자 데이터 요청이 거부되는지 확인합니다. 문의 검색어는 관리자 POST 본문에 담습니다. Cloudflare 로그와 보관 정책의 개인정보 설정은 운영자가 확인합니다.
-6. 운영자는 [개인정보처리방침](privacy.html)의 문의 보관 기간, 삭제 요청 처리 절차와 법적 문구를 확정합니다. [개인정보 운영 결정 사항](PRIVACY-OPERATIONS-v1.8.0.md)에 구현과 정책을 비교했습니다. 배포는 기존 [Pages 빌드와 업로드 절차](MIGRATION-v1.5.0.md)를 따릅니다.
+2. 운영은 공개 Pages와 Access로 호스트 전체를 보호하는 별도 관리자 Pages로 분리합니다. 패키징, 바인딩, 운영 DB 마이그레이션, 시간별 Worker 배포와 롤백은 [v1.8.0 운영 배포 설계](CLOUDFLARE-PRODUCTION-v1.8.0.md)를 따릅니다. [개인정보 운영 정책](PRIVACY-OPERATIONS-v1.8.0.md)에 1년 보관, 백업, 로그 및 메일 범위를 기록했습니다.
 
 ### 로컬 Chrome 회귀 테스트
 
 1. [로컬 Worker 실행 절차](MIGRATION-v1.5.0.md)에 따라 번호 생성 Worker를 8787 포트에 실행합니다.
-2. 공개 저장소에서 `$assets = node scripts/build-pages.cjs`로 Pages 파일을 빌드합니다. 새 임시 디렉터리 경로를 `$state`에 지정하고 Pages를 시작합니다. 아래 UUID는 로컬 검증용입니다.
+2. 공개 저장소에서 `$stage = node scripts/build-pages.cjs public`으로 격리된 패키지를 준비합니다. 새 임시 디렉터리 경로를 `$state`에 지정하고 스테이징 디렉터리에서 Pages를 시작합니다. 아래 UUID는 로컬 검증용입니다.
 
    ```powershell
-   npx wrangler@4.160.0 pages dev "$assets" --ip 127.0.0.1 --port 8788 --compatibility-date 2026-11-17 --service ENGINE=world-lottery-engine --d1 FEEDBACK_DB=18000000-0000-4000-8000-000000000001 --persist-to "$state"
+   Set-Location -LiteralPath $stage
+   npx wrangler@4.160.0 pages dev assets --ip 127.0.0.1 --port 8788 --compatibility-date 2026-11-17 --service ENGINE=world-lottery-engine --d1 FEEDBACK_DB=18000000-0000-4000-8000-000000000001 --persist-to "$state"
    ```
 
-3. 로컬 D1 마이그레이션을 확인할 때는 임시 Wrangler 구성의 `FEEDBACK_DB`에 같은 UUID와 마이그레이션 경로를 지정합니다. `d1 migrations apply FEEDBACK_DB --config <임시 구성 파일> --local --persist-to "$state"`를 실행합니다. 적용 이력은 `d1_migrations` 테이블에서 확인합니다. 같은 명령을 다시 실행하면 이미 적용한 파일은 건너뜁니다. 0002와 0003의 SQL 파일은 기존 스키마에 직접 재실행하면 중복 열 오류가 발생합니다.
+3. 저장소 루트의 다른 터미널에서 `npx wrangler@4.160.0 d1 migrations apply FEEDBACK_DB --config workers/feedback-retention/wrangler.jsonc --local --persist-to "$state"`를 실행합니다. `$state`는 Pages와 동일한 절대 경로입니다. 로컬 전용 UUID에 0001~0004를 순서대로 적용하며, 재실행 시 적용 이력에 있는 파일은 건너뜁니다. 0004는 개인정보 검토를 기록하지 않은 기존 게시물을 초안으로 옮깁니다.
 4. `Ready on http://127.0.0.1:8788`과 `ENGINE … local [connected]`를 확인한 뒤 별도 터미널에서 아래 Chrome 명령을 실행합니다. 회귀 스크립트의 Q&A 화면 검사는 모의 응답을 사용합니다. 실행이 끝나면 Pages와 Worker를 시작한 터미널에서 각각 Ctrl+C로 종료합니다.
+
+삭제 Worker의 로컬 예약 이벤트는 가상 데이터만 담은 별도 `$state`에서 검증합니다. Wrangler 4.160.0에 포함된 workerd의 지원 날짜를 사용하므로 아래 로컬 명령에만 `--compatibility-date 2026-11-17`을 지정합니다.
+
+```powershell
+npx wrangler@4.160.0 dev --config workers/feedback-retention/wrangler.jsonc --local --test-scheduled --compatibility-date 2026-11-17 --ip 127.0.0.1 --port 8790 --persist-to "$state"
+curl.exe "http://127.0.0.1:8790/__scheduled"
+```
 
 ## v1.4 로컬 테스트
 
