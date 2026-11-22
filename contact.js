@@ -7,7 +7,7 @@
       note: '최대 3,000자까지 입력할 수 있습니다. 비밀번호나 복권 사진 같은 민감한 정보는 보내지 마세요.',
       submit: '보내기', issues: '공개 GitHub 이슈 보기', qa: '공개 질문과 답변', sending: '보내는 중…',
       verification: '보안 확인을 완료한 뒤 다시 보내 주세요.',
-      success: '접수했습니다. 접수 번호', invalid: '내용과 이메일 주소를 확인해 주세요.',
+      success: '접수 번호', receiptTitle: '전송 완료', done: '완료', invalid: '내용과 이메일 주소를 확인해 주세요.',
       failure: '접수에 실패했습니다. 잠시 후 다시 시도해 주세요.'
     },
     en: {
@@ -17,7 +17,7 @@
       note: 'Use up to 3,000 characters. Please leave out sensitive information such as passwords or lottery ticket photos.',
       submit: 'Send', issues: 'View public GitHub issues', qa: 'Public Q&A', sending: 'Sending…',
       verification: 'Complete the security check and try again.',
-      success: 'Submission received. Reference', invalid: 'Check your message and email address.',
+      success: 'Reference', receiptTitle: 'Submission received', done: 'Done', invalid: 'Check your message and email address.',
       failure: 'Your submission could not be saved. Please try again in a moment.'
     },
     ja: {
@@ -27,7 +27,7 @@
       note: '3,000文字まで入力できます。パスワードや宝くじ券の写真などの機密情報は送信しないでください。',
       submit: '送信', issues: 'GitHub の公開 Issue を見る', qa: '公開されている質問と回答', sending: '送信中…',
       verification: 'セキュリティ確認を完了してから、もう一度送信してください。',
-      success: '受け付けました。受付番号', invalid: '内容とメールアドレスを確認してください。',
+      success: '受付番号', receiptTitle: '送信完了', done: '完了', invalid: '内容とメールアドレスを確認してください。',
       failure: '送信を受け付けられませんでした。しばらくしてからもう一度お試しください。'
     },
     'pt-BR': {
@@ -37,7 +37,7 @@
       note: 'Use até 3.000 caracteres. Evite dados confidenciais, como senhas ou fotos de bilhetes de loteria.',
       submit: 'Enviar', issues: 'Ver issues públicas no GitHub', qa: 'Perguntas e respostas públicas', sending: 'Enviando…',
       verification: 'Conclua a verificação de segurança e tente novamente.',
-      success: 'Envio recebido. Protocolo', invalid: 'Confira a mensagem e o endereço de e-mail.',
+      success: 'Protocolo', receiptTitle: 'Envio recebido', done: 'Concluir', invalid: 'Confira a mensagem e o endereço de e-mail.',
       failure: 'Não foi possível registrar seu envio. Tente novamente em instantes.'
     }
   };
@@ -52,11 +52,14 @@
   const fields = document.getElementById('contact-fields');
   const status = document.getElementById('contact-status');
   const submit = document.getElementById('contact-submit');
+  const receiptDialog = document.getElementById('contact-receipt');
+  const receiptReference = document.getElementById('receipt-reference');
   const links = document.querySelectorAll('a[lang]');
   const labels = {
     'contact-title': 'title', 'home-link': 'home', 'about-link': 'about', 'guide-link': 'guide', 'privacy-link': 'privacy',
     'contact-intro': 'intro', 'type-label': 'type', 'email-label': 'email', 'message-label': 'message',
-    'contact-note': 'note', 'contact-submit': 'submit', 'public-issues': 'issues', 'public-qa': 'qa'
+    'contact-note': 'note', 'contact-submit': 'submit', 'public-issues': 'issues', 'public-qa': 'qa',
+    'receipt-title': 'receiptTitle', 'receipt-done': 'done'
   };
   let lang;
   let submissionId;
@@ -70,6 +73,7 @@
   function renderStatus() {
     const message = state === 'rate' ? extra[lang][6] : copy[lang][state];
     status.textContent = state === 'success' ? `${message} · ${receipt}` : message || '';
+    if (state === 'success') receiptReference.textContent = status.textContent;
   }
 
   function renderLanguage() {
@@ -152,6 +156,10 @@
     });
   }
   window.addEventListener('popstate', renderLanguage);
+  document.getElementById('receipt-done').addEventListener('click', () => {
+    receiptDialog.close();
+    location.assign('/index.html');
+  });
   form.addEventListener('input', () => {
     submissionId = undefined;
     state = undefined;
@@ -201,6 +209,7 @@
       clearVerification();
       window.turnstile.reset(widget);
       renderStatus();
+      if (state === 'success') receiptDialog.showModal();
     }
   });
 
